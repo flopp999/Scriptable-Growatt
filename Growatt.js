@@ -4,7 +4,7 @@
 // License: Personal use only. See LICENSE for details.
 // This script was created by Flopp999
 // Support me with a coffee https://www.buymeacoffee.com/flopp999 
-let version = 0.17
+let version = 0.18
 let token;
 let deviceSn;
 let epv1 = 23
@@ -78,6 +78,35 @@ async function start() {
     fm.writeString(filePathSettings, JSON.stringify(settings, null, 2)); // Pretty print
   }
 }
+
+async function downLoadFiles() {
+	const baseUrl = "https://raw.githubusercontent.com/flopp999/Scriptable-OnePower/main/assets/"
+	// Filer att hämta – json + bilder
+	const filesToDownload = [
+		"batterysocgreen.png",
+		"batterycharge.png",
+		"batterydischarge.png",
+		"export.png",
+		"home.png",
+		"import.png",
+		"solar.png"
+	]
+	// Ladda ner varje fil
+	for (let filename of filesToDownload) {
+		const url = baseUrl + filename
+		const filePath = fm.joinPath(dir, Script.name() + "_" + filename)
+		try {
+			const req = new Request(url)
+			req.timeoutInterval = 5
+			const image = await req.loadImage()
+			fm.writeImage(filePath, image)
+		} catch (error) {
+			console.error(`Fel vid nedladdning av ${filename}:`, error)
+		}
+	}
+}
+
+
 
 async function updatecode() {
   try {
