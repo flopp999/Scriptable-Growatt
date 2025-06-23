@@ -4,7 +4,7 @@
 // License: Personal use only. See LICENSE for details.
 // This script was created by Flopp999
 // Support me with a coffee https://www.buymeacoffee.com/flopp999 
-let version = 0.18
+let version = 0.19
 let token;
 let deviceSn;
 let epv1 = 23
@@ -44,6 +44,7 @@ const filePathData = fm.joinPath(dir, fileNameData);
 const filePathdataYear = fm.joinPath(dir, fileNameDataYear);
 
 if (!config.runsInWidget){
+	await downLoadFiles();
   await updatecode();
   await readTranslations();
   await readsettings();
