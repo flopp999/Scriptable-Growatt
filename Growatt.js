@@ -4,7 +4,7 @@
 // License: Personal use only. See LICENSE for details.
 // This script was created by Flopp999
 // Support me with a coffee https://www.buymeacoffee.com/flopp999 
-let version = 0.20
+let version = 0.21
 let token;
 let deviceSn;
 let epv1 = 23
@@ -95,7 +95,7 @@ async function downLoadFiles() {
 	// Ladda ner varje fil
 	for (let filename of filesToDownload) {
 		const url = baseUrl + filename
-		const filePath = fm.joinPath(dir, Script.name() + "_" + filename)
+		const filePath = fm.joinPath(dir, filename)
 		try {
 			const req = new Request(url)
 			req.timeoutInterval = 5
@@ -535,11 +535,11 @@ let solarpath = fm.joinPath(fm.documentsDirectory(), "solar.png")
 solarimage = await fm.readImage(solarpath)
 let homepath = fm.joinPath(fm.documentsDirectory(), "home.png")
 homeimage = await fm.readImage(homepath)
-let batterychargepath = fm.joinPath(fm.documentsDirectory(), "batterycharge.png")
+let batterychargepath = fm.joinPath(fm.documentsDirectory(), "charge.png")
 batterychargeimage = await fm.readImage(batterychargepath)
-let batterydischargepath = fm.joinPath(fm.documentsDirectory(), "batterydischarge.png")
+let batterydischargepath = fm.joinPath(fm.documentsDirectory(), "discharge.png")
 batterydischargeimage = await fm.readImage(batterydischargepath)
-let batterysocpath = fm.joinPath(fm.documentsDirectory(), "batterysoc.png")
+let batterysocpath = fm.joinPath(fm.documentsDirectory(), "soc.png")
 batterysocimage = await fm.readImage(batterysocpath)
 
 exportrow.addSpacer()
