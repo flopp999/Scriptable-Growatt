@@ -4,7 +4,7 @@
 // License: Personal use only. See LICENSE for details.
 // This script was created by Flopp999
 // Support me with a coffee https://www.buymeacoffee.com/flopp999 
-let version = 0.19
+let version = 0.20
 let token;
 let deviceSn;
 let epv1 = 23
@@ -84,9 +84,9 @@ async function downLoadFiles() {
 	const baseUrl = "https://raw.githubusercontent.com/flopp999/Scriptable-OnePower/main/assets/"
 	// Filer att hämta – json + bilder
 	const filesToDownload = [
-		"batterysocgreen.png",
-		"batterycharge.png",
-		"batterydischarge.png",
+		"soc.png",
+		"charge.png",
+		"discharge.png",
 		"export.png",
 		"home.png",
 		"import.png",
