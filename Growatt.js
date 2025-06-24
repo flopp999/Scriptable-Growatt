@@ -7,19 +7,6 @@
 let version = 0.23
 let token;
 let deviceSn;
-let epv1 = 23
-let epv2 = 18
-
-let homekwh = 23;
-let batterysoc = 100
-let exportkwh = 33
-let importkwh = 1
-let batterychargekwh = 5
-let batterydischargekwh = 7
-// === API-anrop ===
-
-//const baseURL = "https://api.checkwatt.se";
-let batteryCapacityKwh;
 let widget;
 let day;
 let date;
@@ -29,7 +16,6 @@ let langId;
 let hour;
 let minute;
 let translationData;
-let monthName;
 let currentLang;
 
 const fileNameSettings = Script.name() + "_Settings.json";
@@ -44,7 +30,7 @@ const filePathData = fm.joinPath(dir, fileNameData);
 const filePathdataYear = fm.joinPath(dir, fileNameDataYear);
 
 if (!config.runsInWidget){
-	await downLoadFiles();
+  await downLoadFiles();
   await updatecode();
   await readTranslations();
   await readsettings();
@@ -65,7 +51,6 @@ async function start() {
   const [middleType, middleDay] = settings.showatmiddle.split(",").map(s => s.trim());
  // const [bottomType, bottomDay] = settings.showatbottom.split(",").map(s => s.trim());
   let alert = new Alert();
-  //let vatText = includevat == 1 ? t("yes") : t("no")
   alert.message = 
     t("changesetup") + "?\n" +
     t("top").charAt(0).toUpperCase() + t("top").slice(1) + ":\n" + t(topType) + (topDay ? ", " + t(topDay) : "") + "\n" +
@@ -81,17 +66,17 @@ async function start() {
 }
 
 async function downLoadFiles() {
-	const baseUrl = "https://raw.githubusercontent.com/flopp999/Scriptable-Growatt/main/assets/"
-	// Filer att hämta – json + bilder
-	const filesToDownload = [
-		"soc.png",
-		"charge.png",
-		"discharge.png",
-		"export.png",
-		"home.png",
-		"import.png",
-		"solar.png"
-	]
+  const baseUrl = "https://raw.githubusercontent.com/flopp999/Scriptable-Growatt/main/assets/"
+  // Filer att hämta – json + bilder
+  const filesToDownload = [
+    "soc.png",
+    "charge.png",
+    "discharge.png",
+    "export.png",
+    "home.png",
+    "import.png",
+    "solar.png"
+  ]
 	// Ladda ner varje fil
 	for (let filename of filesToDownload) {
 		const url = baseUrl + filename
@@ -107,16 +92,14 @@ async function downLoadFiles() {
 	}
 }
 
-
-
 async function updatecode() {
   try {
-    const req = new Request("https://raw.githubusercontent.com/flopp999/Scriptable-Growatt/main/Version.txt");
+    const req = new Request("https://github.com/flopp999/Scriptable-Growatt/releases/latest/download/Version.txt");
     req.timeoutInterval = 1;
     const serverVersion = await req.loadString()
     if (version < serverVersion) {
       try {
-        const req = new Request("https://raw.githubusercontent.com/flopp999/Scriptable-Growatt/main/Growatt.js");
+        const req = new Request("https://github.com/flopp999/Scriptable-Growatt/releases/latest/download/Growatt.js");
         req.timeoutInterval = 1;
         const response = await req.load();
         const status = req.response.statusCode;
@@ -126,7 +109,7 @@ async function updatecode() {
         const codeString = response.toRawString();
         fm.writeString(module.filename, codeString);
 
-        const reqTranslations = new Request("https://raw.githubusercontent.com/flopp999/Scriptable-Growatt/main/Translations.json");
+        const reqTranslations = new Request("https://github.com/flopp999/Scriptable-Growatt/releases/latest/download/Translations.json");
         reqTranslations.timeoutInterval = 1;
         const responseTranslations = await reqTranslations.load();
         const statusTranslations = reqTranslations.response.statusCode;
@@ -315,7 +298,7 @@ async function createVariables() {
 
 async function readTranslations() {
   if (!fm.fileExists(filePathTranslations)) {
-    let url = "https://raw.githubusercontent.com/flopp999/Scriptable-Growatt/main/Translations.json";
+    let url = "https://github.com/flopp999/Scriptable-Growatt/releases/latest/download/Translations.json";
     let req = new Request(url);
     req.timeoutInterval = 1;
     let content = await req.loadString();
