@@ -4,7 +4,7 @@
 // License: Personal use only. See LICENSE for details.
 // This script was created by Flopp999
 // Support me with a coffee https://www.buymeacoffee.com/flopp999 
-let version = 0.22
+let version = 0.23
 let token;
 let deviceSn;
 let epv1 = 23
@@ -299,7 +299,7 @@ async function fetchData(jwtToken) {
 		    batterysoc = data["data"]["bmsSoc"];
 		    homekwh = data["data"]["elocalLoadToday"];
 		    exportkwh = data["data"]["etoGridToday"];
-		    //importkwh = data["data"]["elocalLoadToday"];
+		    importkwh = data["data"]["etoUserToday"];
 		    batterychargekwh = data["data"]["echargeToday"];
 		    batterydischargekwh = data["data"]["edischargeToday"];
 
