@@ -17,10 +17,23 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Replace hardcoded URL in EiB.js
+      - name: Replace Version.txt URL
         run: |
-          sed -i 's#https://raw.githubusercontent.com/flopp999/Scriptable-EiB/main/#https://github.com/flopp999/Scriptable-EiB/releases/latest/download/#g' EiB.js
-          sed -i 's#FileManager\.iCloud()#FileManager.local()#g' EiB.js
+          # Ersätter URL för Version.txt
+          # Denna rad matchar exakt raden med Version.txt och ändrar den.
+          sed -i 's|"https://raw.githubusercontent.com/flopp999/Scriptable-Growatt/main/Version.txt"|"https://github.com/flopp999/Scriptable-Growatt/releases/latest/download/Version.txt"|g' Growatt.js
+
+      - name: Replace OnePower.js URL
+        run: |
+          # Ersätter URL för OnePower.js
+          # Matchar exakt raden med OnePower.js och ändrar den.
+          sed -i 's|"https://raw.githubusercontent.com/flopp999/Scriptable-Growatt/main/Growatt.js"|"https://github.com/flopp999/Scriptable-Growatt/releases/latest/download/Growatt.js"|g' Growatt.js
+
+      - name: Replace Translations.json URL
+        run: |
+          # Ersätter URL för Translations.json när den är en del av 'let url ='
+          # Detta är den specifika raden som ska peka på 'assets/' i releasen.
+          sed -i 's|"https://raw.githubusercontent.com/flopp999/Scriptable-Growatt/main/Translations.json"|"https://github.com/flopp999/Scriptable-Growatt/releases/latest/download/Translations.json"|g' Growatt.js
 
       - name: Upload assets to release
         uses: softprops/action-gh-release@v1
