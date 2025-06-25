@@ -4,7 +4,7 @@
 // License: Personal use only. See LICENSE for details.
 // This script was created by Flopp999
 // Support me with a coffee https://www.buymeacoffee.com/flopp999 
-let version = 0.26
+let version = 0.27
 let token;
 let deviceSn;
 let widget;
@@ -30,7 +30,7 @@ const filePathData = fm.joinPath(dir, fileNameData);
 const filePathdataYear = fm.joinPath(dir, fileNameDataYear);
 
 if (!config.runsInWidget){
-	await downLoadFiles();
+	//await downLoadFiles();
 	await updatecode();
 	await readTranslations();
 	await readsettings();
@@ -80,7 +80,7 @@ async function downLoadFiles() {
 		const filePath = fm.joinPath(dir, filename)
 		try {
 			const req = new Request(url)
-			req.timeoutInterval = 5
+			req.timeoutInterval = 10
 			const image = await req.loadImage()
 			fm.writeImage(filePath, image)
 		} catch (error) {
@@ -91,13 +91,13 @@ async function downLoadFiles() {
 
 async function updatecode() {
 	try {
-		const req = new Request("https://github.com/flopp999/Scriptable-Growatt/releases/latest/download/Version.txt");
-		req.timeoutInterval = 1;
+		const req = new Request("https://raw.githubusercontent.com/flopp999/Scriptable-Growatt/main/Version.txt");
+		req.timeoutInterval = 10;
 		const serverVersion = await req.loadString()
 		if (version < serverVersion) {
 			try {
-				const req = new Request("https://github.com/flopp999/Scriptable-Growatt/releases/latest/download/Growatt.js");
-				req.timeoutInterval = 1;
+				const req = new Request("https://raw.githubusercontent.com/flopp999/Scriptable-Growatt/main/Growatt.js");
+				req.timeoutInterval = 10;
 				const response = await req.load();
 				const status = req.response.statusCode;
 				if (status !== 200) {
@@ -106,8 +106,8 @@ async function updatecode() {
 				const codeString = response.toRawString();
 				fm.writeString(module.filename, codeString);
 				
-				const reqTranslations = new Request("https://github.com/flopp999/Scriptable-Growatt/releases/latest/download/Translations.json");
-				reqTranslations.timeoutInterval = 1;
+				const reqTranslations = new Request("https://raw.githubusercontent.com/flopp999/Scriptable-Growatt/main/Translations.json");
+				reqTranslations.timeoutInterval = 10;
 				const responseTranslations = await reqTranslations.load();
 				const statusTranslations = reqTranslations.response.statusCode;
 				if (statusTranslations !== 200) {
@@ -177,12 +177,12 @@ async function readsettings() {
 			throw new Error("Settings file not found");
 		}
 	} catch (error) {
-	if (config.runsInWidget) {
-		return;
-	}
-	console.warn("Settings file not found or error reading file: " + error.message);
-	settings = await ask();
-	fm.writeString(filePathSettings, JSON.stringify(settings, null, 2)); // Pretty print
+		if (config.runsInWidget) {
+			return;
+		}
+		console.warn("Settings file not found or error reading file: " + error.message);
+		settings = await ask();
+		fm.writeString(filePathSettings, JSON.stringify(settings, null, 2)); // Pretty print
 	}
 }
 
@@ -198,19 +198,18 @@ async function getDeviceType(deviceType) {
 	};
 	req.body = `dataloggerSn=${encodeURIComponent(deviceSn)}`;
 	try {
-		req.timeoutInterval = 1;
+		req.timeoutInterval = 10;
 		const response = await req.loadJSON();
-		log(response["deviceType"])
 		if (req.response.statusCode === 200) {
 			const dataJSON = JSON.stringify(response, null ,2);
-			log(dataJSON)
 			settings.deviceType = dataJSON
 			//fm.writeString(filePathData, dataJSON);
 		fm.writeString(filePathSettings, JSON.stringify(settings, null, 2)); // Pretty print
 		} else {
-			console.error("❌ Fel statuskod:", req.response.statusCode);
+			console.error("Fel statuskod:", req.response.statusCode);
 		}
 	} catch (err) {
+		console.error(response)
 		console.error("Fel vid API-anrop:", err);
 	}
 }
@@ -219,26 +218,25 @@ async function fetchData(deviceType) {
 	Path = filePathData
 	DateObj = new Date();
 	async function getData() {
-		const url = "https://openapi.growatt.com/v4/device/tlx/tlx_last_data";
+		const url = "https://openapi.growatt.com/v4/new-api/queryLastData";
 		let req = new Request(url);
 		req.method = "POST";
 		req.headers = {
 			"Content-Type": "application/x-www-form-urlencoded",
 			"token": token
 		};
-		req.body = `tlx_sn=${encodeURIComponent(deviceSn)}`;
+		req.body = `deviceSn=${encodeURIComponent(deviceSn)}&deviceType=${encodeURIComponent(deviceType)}`;
 		try {
-			req.timeoutInterval = 1;
+			req.timeoutInterval = 10;
 			const response = await req.loadJSON();
 			if (req.response.statusCode === 200) {
 				const dataJSON = JSON.stringify(response, null ,2);
 				fm.writeString(filePathData, dataJSON);
-				console.log("Svar från Growatt:", response);
 				settings.updatehour = String(DateObj.getHours()).padStart(2,"0");
 				settings.updateminute = String(DateObj.getMinutes()).padStart(2,"0");
 				fm.writeString(filePathSettings, JSON.stringify(settings, null, 2)); // Pretty print
 			} else {
-				console.error("❌ Fel statuskod:", req.response.statusCode);
+				console.error("Fel statuskod:", req.response.statusCode);
 			}
 		} catch (err) {
 			console.error(response)
@@ -278,9 +276,9 @@ async function createVariables() {
 
 async function readTranslations() {
 	if (!fm.fileExists(filePathTranslations)) {
-		let url = "https://github.com/flopp999/Scriptable-Growatt/releases/latest/download/Translations.json";
+		let url = "https://raw.githubusercontent.com/flopp999/Scriptable-Growatt/main/Translations.json";
 		let req = new Request(url);
-		req.timeoutInterval = 1;
+		req.timeoutInterval = 10;
 		let content = await req.loadString();
 		fm.writeString(filePathTranslations, content);
 	}
