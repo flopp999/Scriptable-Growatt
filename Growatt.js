@@ -4,7 +4,7 @@
 // License: Personal use only. See LICENSE for details.
 // This script was created by Flopp999
 // Support me with a coffee https://www.buymeacoffee.com/flopp999 
-let version = 0.30
+let version = 0.31
 let token;
 let deviceSn;
 let widget;
@@ -273,18 +273,11 @@ async function fetchData() {
 		homekwh = data["data"][settings.deviceType][0]["eopDischrToday"];
 		exportkwh = data["data"][settings.deviceType][0]["eToGridToday"];
 		importkwh = data["data"][settings.deviceType][0]["eToUserToday"];
-		batterychargekwh = data["data"][settings.deviceType][0]["eChargeToday"];
+		batterychargekwh = data["data"][settings.deviceType][0]["eToday"];
 		batterydischargekwh = data["data"][settings.deviceType][0]["eBatDisChargeToday"];
 	}
 		
-		solarkwh = epv1+epv2
-		batterysoc = null;
-		homekwh = data["data"][settings.deviceType][0]["elocalLoadToday"];
-		exportkwh = data["data"][settings.deviceType][0]["eToGridToday"];
-		importkwh = data["data"][settings.deviceType][0]["eToUserToday"];
-		batterychargekwh = data["data"][settings.deviceType][0]["eChargeToday"];
-		batterydischargekwh = data["data"][settings.deviceType][0]["eDischargeToday"];
-	}
+
 
 		
 //	updated = "" + hour + minute + "";
