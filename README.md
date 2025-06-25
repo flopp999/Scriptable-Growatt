@@ -44,7 +44,7 @@ Download Scriptable here:
 ## 🔧 How to Install Code
 
 1. Open the link on your iPhone (not on a computer):
-👉 [Download Growatt.scriptable](https://raw.githubusercontent.com/flopp999/Scriptable-Growatt/main/Growatt.scriptable)
+👉 [Download Growatt.scriptable](https://github.com/flopp999/Scriptable-Growatt/releases/download/Scriptable/Growatt.scriptable)
 
 2. Once the file opens, tap the Share icon (bottom of the screen).
 
