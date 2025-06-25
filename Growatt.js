@@ -185,11 +185,40 @@ async function readsettings() {
 	}
 }
 
+async function getDeviceType(jwtToken) {
+	Path = filePathData
+	DateObj = new Date();
+	async function getData() {
+		const url = "https://openapi.growatt.com/v4/device/check/sn";
+		let req = new Request(url);
+		req.method = "POST";
+		req.headers = {
+			"Content-Type": "application/x-www-form-urlencoded",
+			"token": token
+		};
+		req.body = `dataloggerSn=${encodeURIComponent(deviceSn)}`;
+		try {
+			req.timeoutInterval = 1;
+			const response = await req.loadJSON();
+			log(response["deviceType"])
+			if (req.response.statusCode === 200) {
+				const dataJSON = JSON.stringify(response, null ,2);
+				//fm.writeString(filePathData, dataJSON);
+//				fm.writeString(filePathSettings, JSON.stringify(settings, null, 2)); // Pretty print
+			} else {
+				console.error("❌ Fel statuskod:", req.response.statusCode);
+			}
+		} catch (err) {
+			console.error("Fel vid API-anrop:", err);
+		}
+	}
+}
+
 async function fetchData(jwtToken) {
 	Path = filePathData
 	DateObj = new Date();
 	async function getData() {
-		const url = "https://openapi.growatt.com/v1/device/tlx/tlx_last_data";
+		const url = "https://openapi.growatt.com/v4/device/tlx/tlx_last_data";
 		let req = new Request(url);
 		req.method = "POST";
 		req.headers = {
@@ -350,6 +379,7 @@ let listwidget = new ListWidget();
 
 async function createWidget(){
 	//token = set loginAndGetToken();
+	await getDeviceType();
 	await fetchData(token);
 	const date = new Date();
 	let solarkwh = epv1+epv2
