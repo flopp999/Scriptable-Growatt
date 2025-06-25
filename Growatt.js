@@ -4,7 +4,7 @@
 // License: Personal use only. See LICENSE for details.
 // This script was created by Flopp999
 // Support me with a coffee https://www.buymeacoffee.com/flopp999 
-let version = 0.28
+let version = 0.29
 let token;
 let deviceSn;
 let widget;
@@ -153,6 +153,7 @@ async function readsettings() {
 			if (!settings.language || settings.language.length === 0) {
 				settings.language = 1
 			}
+			fm.writeString(filePathSettings, JSON.stringify(settings, null, 2));
 			langId = settings.language; // 1 = ENG, 2 = DE, 3 = SV
 			await readTranslations();
 		} else {
