@@ -4,7 +4,7 @@
 // License: Personal use only. See LICENSE for details.
 // This script was created by Flopp999
 // Support me with a coffee https://www.buymeacoffee.com/flopp999 
-let version = 0.27
+let version = 0.28
 let token;
 let deviceSn;
 let widget;
@@ -186,23 +186,22 @@ async function readsettings() {
 	}
 }
 
-async function getDeviceType(deviceType) {
+async function getDeviceType() {
 	Path = filePathData
 	DateObj = new Date();
-	const url = "https://openapi.growatt.com/v4/device/check/sn";
+	const url = "https://openapi.growatt.com/v4/new-api/queryDeviceList";
 	let req = new Request(url);
 	req.method = "POST";
 	req.headers = {
 		"Content-Type": "application/x-www-form-urlencoded",
 		"token": token
 	};
-	req.body = `dataloggerSn=${encodeURIComponent(deviceSn)}`;
 	try {
 		req.timeoutInterval = 10;
-		const response = await req.loadJSON();
+		response = await req.loadJSON();
 		if (req.response.statusCode === 200) {
-			const dataJSON = JSON.stringify(response, null ,2);
-			settings.deviceType = dataJSON
+			//const dataJSON = JSON.stringify(response, null ,2);
+			settings.deviceType = response["data"]["data"][0]["deviceType"]
 			//fm.writeString(filePathData, dataJSON);
 		fm.writeString(filePathSettings, JSON.stringify(settings, null, 2)); // Pretty print
 		} else {
@@ -214,7 +213,7 @@ async function getDeviceType(deviceType) {
 	}
 }
 
-async function fetchData(deviceType) {
+async function fetchData() {
 	Path = filePathData
 	DateObj = new Date();
 	async function getData() {
@@ -225,7 +224,7 @@ async function fetchData(deviceType) {
 			"Content-Type": "application/x-www-form-urlencoded",
 			"token": token
 		};
-		req.body = `deviceSn=${encodeURIComponent(deviceSn)}&deviceType=${encodeURIComponent(deviceType)}`;
+		req.body = `deviceSn=${encodeURIComponent(settings.deviceSn)}&deviceType=${encodeURIComponent(settings.deviceType)}`;
 		try {
 			req.timeoutInterval = 10;
 			const response = await req.loadJSON();
