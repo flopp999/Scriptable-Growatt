@@ -92,12 +92,12 @@ async function downLoadFiles() {
 
 async function updatecode() {
 	try {
-		const req = new Request("https://raw.githubusercontent.com/flopp999/Scriptable-Growatt/main/Version.txt");
+		const req = new Request("https://github.com/flopp999/Scriptable-Growatt/releases/latest/download/Version.txt");
 		req.timeoutInterval = 10;
 		const serverVersion = await req.loadString()
 		if (version < serverVersion) {
 			try {
-				const req = new Request("https://raw.githubusercontent.com/flopp999/Scriptable-Growatt/main/Growatt.js");
+				const req = new Request("https://github.com/flopp999/Scriptable-Growatt/releases/latest/download/Growatt.js");
 				req.timeoutInterval = 10;
 				const response = await req.load();
 				const status = req.response.statusCode;
@@ -107,7 +107,7 @@ async function updatecode() {
 				const codeString = response.toRawString();
 				fm.writeString(module.filename, codeString);
 				
-				const reqTranslations = new Request("https://raw.githubusercontent.com/flopp999/Scriptable-Growatt/main/Translations.json");
+				const reqTranslations = new Request("https://github.com/flopp999/Scriptable-Growatt/releases/latest/download/Translations.json");
 				reqTranslations.timeoutInterval = 10;
 				const responseTranslations = await reqTranslations.load();
 				const statusTranslations = reqTranslations.response.statusCode;
@@ -292,7 +292,7 @@ async function createVariables() {
 
 async function readTranslations() {
 	if (!fm.fileExists(filePathTranslations)) {
-		let url = "https://raw.githubusercontent.com/flopp999/Scriptable-Growatt/main/Translations.json";
+		let url = "https://github.com/flopp999/Scriptable-Growatt/releases/latest/download/Translations.json";
 		let req = new Request(url);
 		req.timeoutInterval = 10;
 		let content = await req.loadString();
