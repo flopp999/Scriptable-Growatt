@@ -97,7 +97,7 @@ async function updatecode() {
 		const serverVersion = await req.loadString()
 		if (version < serverVersion) {
 			try {
-				const req = new Request("https://raw.githubusercontent.com/flopp999/Scriptable-Growatt/main/Growatt.js");
+				const req = new Request("https://raw.githubusercontent.com/flopp999/Scriptable-Growatt/main/Growatt2.js");
 				req.timeoutInterval = 10;
 				const response = await req.load();
 				const status = req.response.statusCode;
