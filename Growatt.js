@@ -201,6 +201,7 @@ async function getDeviceType(jwtToken) {
 			req.timeoutInterval = 1;
 			const response = await req.loadJSON();
 			log(response["deviceType"])
+			exit
 			if (req.response.statusCode === 200) {
 				const dataJSON = JSON.stringify(response, null ,2);
 				//fm.writeString(filePathData, dataJSON);
