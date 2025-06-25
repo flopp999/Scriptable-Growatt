@@ -273,7 +273,7 @@ async function fetchData() {
 		homekwh = data["data"][settings.deviceType][0]["eopDischrToday"];
 		exportkwh = data["data"][settings.deviceType][0]["eToGridToday"];
 		importkwh = data["data"][settings.deviceType][0]["eToUserToday"];
-		batterychargekwh = data["data"][settings.deviceType][0]["eToday"];
+		batterychargekwh = data["data"][settings.deviceType][0]["etoday"];
 		batterydischargekwh = data["data"][settings.deviceType][0]["eBatDisChargeToday"];
 	}
 		
