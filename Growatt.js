@@ -4,7 +4,7 @@
 // License: Personal use only. See LICENSE for details.
 // This script was created by Flopp999
 // Support me with a coffee https://www.buymeacoffee.com/flopp999 
-let version = 0.25
+let version = 0.26
 let token;
 let deviceSn;
 let widget;
@@ -40,8 +40,6 @@ if (!config.runsInWidget){
 
 if (config.runsInWidget){
 	await readsettings();
-}
-if (config.runsInWidget){
 	await updatecode();
 	await createVariables();
 }
@@ -137,6 +135,9 @@ async function readsettings() {
 		if (fm.fileExists(filePathSettings)) {
 			let raw = fm.readString(filePathSettings);
 			settings = JSON.parse(raw);
+			if (!settings.deviceType || settings.deviceType.length === 0) {
+				settings.deviceType = ""
+			}
 			if (!settings.token || settings.token.length === 0) {
 				settings.token = "token"
 			}
@@ -185,37 +186,36 @@ async function readsettings() {
 	}
 }
 
-async function getDeviceType(jwtToken) {
+async function getDeviceType(deviceType) {
 	Path = filePathData
 	DateObj = new Date();
-	async function getData() {
-		const url = "https://openapi.growatt.com/v4/device/check/sn";
-		let req = new Request(url);
-		req.method = "POST";
-		req.headers = {
-			"Content-Type": "application/x-www-form-urlencoded",
-			"token": token
-		};
-		req.body = `dataloggerSn=${encodeURIComponent(deviceSn)}`;
-		try {
-			req.timeoutInterval = 1;
-			const response = await req.loadJSON();
-			log(response["deviceType"])
-			exit
-			if (req.response.statusCode === 200) {
-				const dataJSON = JSON.stringify(response, null ,2);
-				//fm.writeString(filePathData, dataJSON);
-//				fm.writeString(filePathSettings, JSON.stringify(settings, null, 2)); // Pretty print
-			} else {
-				console.error("❌ Fel statuskod:", req.response.statusCode);
-			}
-		} catch (err) {
-			console.error("Fel vid API-anrop:", err);
+	const url = "https://openapi.growatt.com/v4/device/check/sn";
+	let req = new Request(url);
+	req.method = "POST";
+	req.headers = {
+		"Content-Type": "application/x-www-form-urlencoded",
+		"token": token
+	};
+	req.body = `dataloggerSn=${encodeURIComponent(deviceSn)}`;
+	try {
+		req.timeoutInterval = 1;
+		const response = await req.loadJSON();
+		log(response["deviceType"])
+		if (req.response.statusCode === 200) {
+			const dataJSON = JSON.stringify(response, null ,2);
+			log(dataJSON)
+			settings.deviceType = dataJSON
+			//fm.writeString(filePathData, dataJSON);
+		fm.writeString(filePathSettings, JSON.stringify(settings, null, 2)); // Pretty print
+		} else {
+			console.error("❌ Fel statuskod:", req.response.statusCode);
 		}
+	} catch (err) {
+		console.error("Fel vid API-anrop:", err);
 	}
 }
 
-async function fetchData(jwtToken) {
+async function fetchData(deviceType) {
 	Path = filePathData
 	DateObj = new Date();
 	async function getData() {
@@ -241,6 +241,7 @@ async function fetchData(jwtToken) {
 				console.error("❌ Fel statuskod:", req.response.statusCode);
 			}
 		} catch (err) {
+			console.error(response)
 			console.error("Fel vid API-anrop:", err);
 		}
 	}
@@ -257,15 +258,15 @@ async function fetchData(jwtToken) {
 	}
 	let content = fm.readString(filePathData);
 	data = JSON.parse(content);
-	epv1 = data["data"]["epv1Today"];
-	epv2 = data["data"]["epv2Today"];
-	batterysoc = data["data"]["bmsSoc"];
-	homekwh = data["data"]["elocalLoadToday"];
-	exportkwh = data["data"]["etoGridToday"];
-	importkwh = data["data"]["etoUserToday"];
-	batterychargekwh = data["data"]["echargeToday"];
-	batterydischargekwh = data["data"]["edischargeToday"];
-	updated = "" + hour + minute + "";
+	epv1 = data["data"]["min"][0]["epv1Today"];
+	epv2 = data["data"]["min"][0]["epv2Today"];
+	batterysoc = data["data"]["min"][0]["bmsSoc"];
+	homekwh = data["data"]["min"][0]["elocalLoadToday"];
+	exportkwh = data["data"]["min"][0]["etoGridToday"];
+	importkwh = data["data"]["min"][0]["etoUserToday"];
+	batterychargekwh = data["data"]["min"][0]["echargeToday"];
+	batterydischargekwh = data["data"]["min"][0]["edischargeToday"];
+//	updated = "" + hour + minute + "";
 }
 
 async function createVariables() {
@@ -380,8 +381,10 @@ let listwidget = new ListWidget();
 
 async function createWidget(){
 	//token = set loginAndGetToken();
-	await getDeviceType();
-	await fetchData(token);
+	if (settings.deviceType == "") {
+		await getDeviceType();
+	}
+	await fetchData(settings.deviceType);
 	const date = new Date();
 	let solarkwh = epv1+epv2
 	//let widget = new ListWidget();
