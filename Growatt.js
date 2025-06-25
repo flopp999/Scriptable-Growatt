@@ -4,7 +4,7 @@
 // License: Personal use only. See LICENSE for details.
 // This script was created by Flopp999
 // Support me with a coffee https://www.buymeacoffee.com/flopp999 
-let version = 0.29
+let version = 0.30
 let token;
 let deviceSn;
 let widget;
@@ -17,6 +17,7 @@ let hour;
 let minute;
 let translationData;
 let currentLang;
+let solarkwh;
 
 const fileNameSettings = Script.name() + "_Settings.json";
 const fileNameTranslations = Script.name() + "_Translations.json";
@@ -256,14 +257,36 @@ async function fetchData() {
 	}
 	let content = fm.readString(filePathData);
 	data = JSON.parse(content);
-	epv1 = data["data"]["min"][0]["epv1Today"];
-	epv2 = data["data"]["min"][0]["epv2Today"];
-	batterysoc = data["data"]["min"][0]["bmsSoc"];
-	homekwh = data["data"]["min"][0]["elocalLoadToday"];
-	exportkwh = data["data"]["min"][0]["etoGridToday"];
-	importkwh = data["data"]["min"][0]["etoUserToday"];
-	batterychargekwh = data["data"]["min"][0]["echargeToday"];
-	batterydischargekwh = data["data"]["min"][0]["edischargeToday"];
+	if (settings.deviceType == "min") {
+		epv1 = data["data"][settings.deviceType][0]["epv1Today"];
+		epv2 = data["data"][settings.deviceType][0]["epv2Today"];
+		solarkwh = epv1+epv2
+		batterysoc = data["data"][settings.deviceType][0]["bmsSoc"];
+		homekwh = data["data"][settings.deviceType][0]["elocalLoadToday"];
+		exportkwh = data["data"][settings.deviceType][0]["etoGridToday"];
+		importkwh = data["data"][settings.deviceType][0]["etoUserToday"];
+		batterychargekwh = data["data"][settings.deviceType][0]["echargeToday"];
+		batterydischargekwh = data["data"][settings.deviceType][0]["edischargeToday"];
+	} else if (settings.deviceType == "storage") {
+		solarkwh = data["data"][settings.deviceType][0]["epvToday"];
+		batterysoc = data["data"][settings.deviceType][0]["capacity"];
+		homekwh = data["data"][settings.deviceType][0]["eopDischrToday"];
+		exportkwh = data["data"][settings.deviceType][0]["eToGridToday"];
+		importkwh = data["data"][settings.deviceType][0]["eToUserToday"];
+		batterychargekwh = data["data"][settings.deviceType][0]["eChargeToday"];
+		batterydischargekwh = data["data"][settings.deviceType][0]["eBatDisChargeToday"];
+	}
+		
+		solarkwh = epv1+epv2
+		batterysoc = null;
+		homekwh = data["data"][settings.deviceType][0]["elocalLoadToday"];
+		exportkwh = data["data"][settings.deviceType][0]["eToGridToday"];
+		importkwh = data["data"][settings.deviceType][0]["eToUserToday"];
+		batterychargekwh = data["data"][settings.deviceType][0]["eChargeToday"];
+		batterydischargekwh = data["data"][settings.deviceType][0]["eDischargeToday"];
+	}
+
+		
 //	updated = "" + hour + minute + "";
 }
 
@@ -384,7 +407,7 @@ async function createWidget(){
 	}
 	await fetchData(settings.deviceType);
 	const date = new Date();
-	let solarkwh = epv1+epv2
+
 	//let widget = new ListWidget();
 	let first = listwidget.addStack()
 	first.layoutHorizontally()
