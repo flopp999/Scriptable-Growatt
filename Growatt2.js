@@ -4,7 +4,7 @@
 // License: Personal use only. See LICENSE for details.
 // This script was created by Flopp999
 // Support me with a coffee https://www.buymeacoffee.com/flopp999 
-let version = 0.35
+let version = 0.36
 let widget;
 let day;
 let date;
@@ -16,6 +16,18 @@ let minute;
 let translationData;
 let currentLang;
 let solarkwh;
+let allValues = [];
+let prices;
+let pricesJSON;
+let priceAvg;
+let priceLowest;
+let priceHighest;
+let area;
+let resolution;
+let currency;
+let vat;
+let includevat;
+let extras;
 
 const fileNameSettings = Script.name() + "_Settings.json";
 const fileNameTranslations = Script.name() + "_Translations.json";
@@ -43,35 +55,23 @@ if (config.runsInWidget){
 	//await createVariables();
 }
 
-async function start() {
-	const [topType, topDay] = settings.showattop.split(",").map(s => s.trim());
-	const [middleType, middleDay] = settings.showatmiddle.split(",").map(s => s.trim());
-	// const [bottomType, bottomDay] = settings.showatbottom.split(",").map(s => s.trim());
-	let alert = new Alert();
-	alert.message = 
-	t("changesetup") + "?\n" +
-	t("top").charAt(0).toUpperCase() + t("top").slice(1) + ":\n" + t(topType) + (topDay ? ", " + t(topDay) : "") + "\n" +
-	t("middle").charAt(0).toUpperCase() + t("middle").slice(1) + ":\n" + t(middleType) + (middleDay ? ", " + t(middleDay) : "")
-	//t("bottom").charAt(0).toUpperCase() + t("bottom").slice(1) + ":\n" + t(bottomType) + (bottomDay ? ", " + t(bottomDay) : "")
-	alert.addAction(t("yes"));
-	alert.addAction(t("no"));
-	let index = await alert.presentAlert();
-	if (index === 0) {
-		settings = await ask();
-		fm.writeString(filePathSettings, JSON.stringify(settings, null, 2)); // Pretty print
-	}
-}
-
 async function downLoadFiles() {
 	const baseUrl = "https://raw.githubusercontent.com/flopp999/Scriptable-Growatt/main/assets/"
 	const filesToDownload = [
-		"soc.png",
 		"charge.png",
 		"discharge.png",
 		"export.png",
 		"home.png",
 		"import.png",
-		"solar.png"
+		"batterysocgreen.png",
+		"batterysocorange.png",
+		"batterysocred.png",
+		"batterysocyellow.png",
+		"homepercentgreen.png",
+		"homepercentorange.png",
+		"homepercentred.png",
+		"homepercentyellow.png",
+		"sun.png"
 	]
 	for (let filename of filesToDownload) {
 		const url = baseUrl + filename
@@ -328,10 +328,82 @@ function t(key) {
 }
 
 async function ask() {
+	[settings.area, settings.vat, settings.currency] = await askForArea();
+  settings.includevat = await askForIncludeVAT();
+  settings.extras = await askForExtras();
+  settings.showattop = "graph, today"
+  settings.showatmiddle = "pricestats, today"
+  settings.graphOption = {"top": "line"},
+  settings.resolution = 60;
+  settings.height = 550
 	settings.token = await askForToken();
 	settings.deviceSn = await askForDeviceSn();
 	fm.writeString(filePathSettings, JSON.stringify(settings, null, 2));
 	return settings
+}
+
+async function PriceStats(day) {
+  await Data(day);
+  if (prices == 0) {
+    return;
+    }
+  let bottom = listwidget.addStack();
+  // now
+	let now = bottom.addText(t("now") + " " + Math.round(pricesJSON[hour]));
+	now.font = Font.lightSystemFont(11);
+	now.textColor = new Color("#00ffff");
+	bottom.addSpacer();
+  // lowest
+  let lowest = bottom.addText(t("lowest") + " " + Math.round(priceLowest));
+  lowest.font = Font.lightSystemFont(11);
+  lowest.textColor = new Color("#75cf00");
+  bottom.addSpacer();
+  // average
+  let avg = bottom.addText(t("average") + " " + Math.round(priceAvg));
+  avg.font = Font.lightSystemFont(11);
+  avg.textColor = new Color("#f38");
+  bottom.addSpacer();
+  // highest
+  let highest = bottom.addText(t("highest") + " " + Math.round(priceHighest));
+  highest.font = Font.lightSystemFont(11);
+  highest.textColor = new Color("#ff1c00");
+  listwidget.addSpacer(5);
+}
+
+async function askForExtras() {
+  let alert = new Alert();
+  alert.title = t("extraelectricitycost");
+  alert.message = (t("enterextra") + `${settings.currency}`);
+  alert.addTextField("e.g. 0.30",String(settings.extras ?? "0")).setDecimalPadKeyboard();
+  alert.addAction("OK");
+  await alert.present();
+  let input = alert.textFieldValue(0);
+  input = input.replace(",", ".")
+  let newCost = parseFloat(input);
+  return newCost;
+}
+
+async function askForIncludeVAT() {
+  let alert = new Alert();
+  alert.message = t("doyouwantvat") + "?";
+  alert.addAction(t("withvat"));
+  alert.addAction(t("withoutvat"));
+  let index = await alert.presentAlert();
+  return [1,0][index];
+}
+
+async function askForArea() {
+  let alert = new Alert();
+  alert.message = t("chooseyourelectricityarea") + ":";
+  let areas = ["SE1","SE2","SE3","SE4"];
+  for (let area of areas) {
+    alert.addAction(area);
+  }
+  let index = await alert.presentAlert();
+  let area = ["SE1","SE2","SE3","SE4"][index];
+  let vat = 25;
+  let currencies = "SEK";
+  return [area, vat, currencies];
 }
 
 // Select resolution
@@ -360,6 +432,106 @@ async function askForToken() {
 	return input;
 }
 
+async function Graph(day, graphOption) {
+//chart
+  await Data(day);
+  let left = listwidget.addStack();
+  let whatday = left.addText(date);
+  whatday.textColor = new Color("#ffffff");
+  whatday.font = Font.lightSystemFont(13);
+  left.addSpacer();
+  let updatetext = left.addText("Nord Pool " + updated);
+  updatetext.font = Font.lightSystemFont(13);
+  updatetext.textColor = new Color("#ffffff");
+  if (resolution == 60) {
+    let avgtoday = []
+    let dotNow = ""
+    let countertoday = 0
+    let counterdot = 0
+    
+    do{
+      avgtoday += priceAvg + ","
+      countertoday += 1
+    }
+    while (countertoday < 24)
+    
+    do{
+      if (hour == counterdot && day == "today") {
+        dotNow += pricesJSON[counterdot] + ","
+      }
+      else {
+        dotNow += ","
+      }
+      counterdot += 1
+    }
+    while (counterdot < 24)
+    let graphtoday = "https://quickchart.io/chart?bkg=black&w=1300&h=" + settings.height + "&c="
+    graphtoday += encodeURI("{\
+      data: { \
+        labels: ["+hours+"],\
+        datasets: [\
+        {\
+            data: ["+dotNow+"],\
+            type: 'line',\
+            fill: false,\
+            borderColor: 'rgb(0,255,255)',\
+            borderWidth: 65,\
+            pointRadius: 6\
+          },\
+          {\
+            data: ["+avgtoday+"],\
+            type: 'line',\
+            fill: false,\
+            borderColor: 'rgb(255,127,39)',\
+            borderWidth: 6,\
+            pointRadius: 0\
+          },\
+          {\
+            data: [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],\
+            type: 'line',\
+            fill: false,\
+            borderColor: 'rgb(255,255,255)',\
+            borderWidth: 6,\
+            pointRadius: 0\
+          },\
+          {\
+            data: ["+pricesJSON+"],\
+            type: '"+graphOption+"',\
+            fill: false,\
+            borderColor: getGradientFillHelper('vertical',['rgb(255,25,255)','rgb(255,48,8)','rgb(255,127,39)','rgb(255,255,0)','rgb(57,118,59)']),\
+            borderWidth: 20, \
+            pointRadius: 0\
+          },\
+        ]\
+      },\
+        options:\
+          {\
+            legend:\
+            {\
+              display: false\
+            },\
+            scales:\
+            {\
+              xAxes: [{\
+                offset:true,\
+                ticks:{fontSize:35,fontColor:'white'}\
+              }],\
+              yAxes: [{\
+                ticks:{stepSize:10,beginAtZero:true,fontSize:35,fontColor:'white'}\
+              }]\
+            }\
+          }\
+    }")
+    graphtoday.timeoutInterval = 5;
+    const GRAPH = await new Request(graphtoday).loadImage()
+    let emptyrow = listwidget.addStack()
+    listwidget.addSpacer(5)
+    let chart = listwidget.addStack()
+    chart.addImage(GRAPH) 
+  }
+  listwidget.addSpacer(5);
+}
+
 // Include extra cost?
 async function askForDeviceSn() {
 	let alert = new Alert();
@@ -373,15 +545,6 @@ async function askForDeviceSn() {
 	return input;
 }
 
-const smallFont = 10;
-const mediumFont = 12;
-const bigFont = 13.5;
-const now = new Date();
-// Hämta antalet dagar i innevarande månad
-const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
-// Skapa array från 1 till antal dagar
-const daysArray = Array.from({ length: daysInMonth }, (_, i) => i + 1);
-
 async function renderSection(position) {
 	const value = settings[`showat${position}`];
 	if (!value || value === "nothing") return;
@@ -394,120 +557,247 @@ async function renderSection(position) {
 		case "graph":
 		await Graph(day, graphOption);
 		break;
-		case "revenue":
-		await Revenue();
-		break;
+		case "pricestats":
+    await PriceStats(day);
+    break;
 		default:
 	}
 }
 
-let listwidget = new ListWidget();
+async function Data(day) {
+  allValues = [];
+  Path = fm.joinPath(dir, "NordPool_" + day + "Prices.json");
+  DateObj = new Date();
+  async function getData() {
+    const yyyy = DateObj.getFullYear();
+    const mm = String(DateObj.getMonth() + 1).padStart(2, '0');
+    const dd = String(DateObj.getDate()).padStart(2, '0');
+    const date = `${yyyy}-${mm}-${dd}`;
+    const Url = `https://dataportal-api.nordpoolgroup.com/api/DayAheadPriceIndices?date=${date}&market=DayAhead&indexNames=${area}&currency=${currency}&resolutionInMinutes=${resolution}`;
+    const request = new Request(Url);
+    request.timeoutInterval = 1;
+    let response = (await request.loadJSON());
+    const dataJSON = JSON.stringify(response, null ,2);
+    fm.writeString(Path, dataJSON);
+  }
+  if (fm.fileExists(Path)) {
+    let modified = fm.modificationDate(Path);
+    let now = new Date();
+    let minutesDiff = (now - modified) / (1000 * 60 * 60);
+    if (minutesDiff > 10) {
+      await getData();
+    }
+  } else {
+    await getData();
+  }
+  hour = DateObj.getHours();
+  minute = DateObj.getMinutes();
+  let content = fm.readString(Path);
+  response = JSON.parse(content);
+  date = response.deliveryDateCET;  
+  prices = response.multiIndexEntries;
+  let Updated = response.updatedAt;
+  updated = Updated.replace(/\.\d+Z$/, '').replace('T', ' ');
+  for (let i = 0; i < prices.length; i++) {
+    const value = prices[i]["entryPerArea"][`${area}`];
+    allValues.push(String(value/10* (1 + "." + (includevat*vat)) + extras));
+  }
+  pricesJSON = JSON.parse(JSON.stringify(allValues));
+  priceLowest = (Math.min(...pricesJSON.map(Number)));
+  priceHighest = (Math.max(...pricesJSON.map(Number)));
+  priceDiff = (priceHighest - priceLowest)/3;
+  priceAvg = pricesJSON.map(Number).reduce((a, b) => a + b, 0) / pricesJSON.length;
+}
 
 async function createWidget(){
 	//token = set loginAndGetToken();
+	listwidget.backgroundColor = new Color("#000000");
 	if (!settings.deviceType || settings.deviceType.length === 0 || settings.deviceType == "") {
 		await getDeviceType();
 	}
 	await fetchData(settings.deviceType);
+	await renderSection("top");
+  await renderSection("middle");
+	let moms = listwidget.addStack();
+  momstext = moms.addText("v. " + version);
+  momstext.font = Font.lightSystemFont(10);
+  momstext.textColor = new Color("#ffffff");
+  moms.addSpacer(40);
+  momstext = moms.addText(t("updated") + String(settings.updatehour) + ":" + String(settings.updateminute));
+  momstext.font = Font.lightSystemFont(10);
+  momstext.textColor = new Color("#ffffff");
+  moms.addSpacer();
+  momstext = moms.addText(area);
+  momstext.font = Font.lightSystemFont(10);
+  momstext.textColor = new Color("#ffffff");
+  moms.addSpacer();
+  momstext = moms.addText("Extras: " + extras);
+  momstext.font = Font.lightSystemFont(10);
+  momstext.textColor = new Color("#ffffff");
+  moms.addSpacer();
+  if (includevat == 1) {
+    momstext = moms.addText(t("withvat"));
+  }
+  else {
+    momstext = moms.addText(t("withoutvat"));
+  }
+  momstext.font = Font.lightSystemFont(10);
+  momstext.textColor = new Color("#ffffff");
+  
+	listwidget.addSpacer(5)
+	
 	const date = new Date();
-
-	//let widget = new ListWidget();
+	let solarkwh = epv1+epv2
 	let first = listwidget.addStack()
-	first.layoutHorizontally()
-	first.addSpacer()
-	let exportrowr = first.addStack()
-	let exportrow=exportrowr.addStack()
+	let spacesize = 3;
+	let textsize = 17;
+	let imagesize = 35;
+	let growattrow = first.addStack()
+	let exportrow=growattrow.addStack()
+	growattrow.addSpacer(spacesize)
+	let exportrowvalue=growattrow.addStack()
+	growattrow.addSpacer()
+	let sunhomerow=growattrow.addStack()
+	growattrow.addSpacer(spacesize)
+	let sunhomerowvalue=growattrow.addStack()
+	growattrow.addSpacer()
+	let batteryrow=growattrow.addStack()
+	growattrow.addSpacer(spacesize)
+	let batteryrowvalue=growattrow.addStack()
+	growattrow.addSpacer()
+	let percentrow=growattrow.addStack()
+	growattrow.addSpacer(spacesize)
+	let percentrowvalue=growattrow.addStack()
+	listwidget.addSpacer(5)
+	let jjj=listwidget.addStack()
 	exportrow.layoutVertically()
-	//let homerow = widget.addStack()
-	//let batterychargerow = widget.addStack()
-	//let batterydischargerow = widget.addStack()
-	first.addSpacer()
+	exportrowvalue.layoutVertically()
+	sunhomerow.layoutVertically()
+	sunhomerowvalue.layoutVertically()
+	batteryrow.layoutVertically()
+	batteryrowvalue.layoutVertically()
+	percentrow.layoutVertically()
+	percentrowvalue.layoutVertically()
+	
 	let fm = FileManager.iCloud()
 	let exportpath = fm.joinPath(fm.documentsDirectory(), "export.png")
 	exportimage = await fm.readImage(exportpath)
 	let importpath = fm.joinPath(fm.documentsDirectory(), "import.png")
 	importimage = await fm.readImage(importpath)
-	let solarpath = fm.joinPath(fm.documentsDirectory(), "solar.png")
+	let solarpath = fm.joinPath(fm.documentsDirectory(), "sun.png")
 	solarimage = await fm.readImage(solarpath)
 	let homepath = fm.joinPath(fm.documentsDirectory(), "home.png")
 	homeimage = await fm.readImage(homepath)
-	let batterychargepath = fm.joinPath(fm.documentsDirectory(), "charge.png")
+	loadpercent=(homekwh-importkwh)/homekwh*100
+	
+	if (loadpercent < 20) {
+	  homepercentpath = fm.joinPath(fm.documentsDirectory(), "homepercentred.png")
+	} else if (loadpercent < 40) {
+	  homepercentpath = fm.joinPath(fm.documentsDirectory(), "homepercentorange.png")
+	} else if (loadpercent < 70) {
+	  homepercentpath = fm.joinPath(fm.documentsDirectory(), "homepercentyellow.png")
+	} else {
+	  homepercentpath = fm.joinPath(fm.documentsDirectory(), "homepercentgreen.png")
+	}
+	
+	homepercentimage = await fm.readImage(homepercentpath)
+	let batterychargepath = fm.joinPath(fm.documentsDirectory(), "discharge.png")
 	batterychargeimage = await fm.readImage(batterychargepath)
-	let batterydischargepath = fm.joinPath(fm.documentsDirectory(), "discharge.png")
+	let batterydischargepath = fm.joinPath(fm.documentsDirectory(), "charge.png")
 	batterydischargeimage = await fm.readImage(batterydischargepath)
-	let batterysocpath = fm.joinPath(fm.documentsDirectory(), "soc.png")
+	let batterysocpath
+	if (batterysoc < 20) {
+	  batterysocpath = fm.joinPath(fm.documentsDirectory(), "batterysocred.png")
+	} else if (batterysoc < 40) {
+	  batterysocpath = fm.joinPath(fm.documentsDirectory(), "batterysocorange.png")
+	} else if (batterysoc < 70) {
+	  batterysocpath = fm.joinPath(fm.documentsDirectory(), "batterysocyellow.png")
+	} else {
+	  batterysocpath = fm.joinPath(fm.documentsDirectory(), "batterysocgreen.png")
+	}
 	batterysocimage = await fm.readImage(batterysocpath)
+	let logopath = fm.joinPath(fm.documentsDirectory(), "logo.png")
+	logoimage = await fm.readImage(logopath)
 	
-	exportrow.addSpacer()
-	kk=exportrow.addImage(solarimage);
-	kk.imageSize = new Size(40, 40); // Extra kontroll på bildstorlek
-	exportrow.addSpacer()
-	ss=exportrow.addImage(homeimage);
-	ss.imageSize = new Size(40, 40); // Extra kontroll på bildstorlek
-	exportrow.addSpacer()
+	exportrow.addSpacer(2);
 	ii=exportrow.addImage(exportimage);
-	ii.imageSize = new Size(40, 40); // Extra kontroll på bildstorlek
-	exportrow.addSpacer()
+	ii.imageSize = new Size(imagesize, imagesize);
+	exportrow.addSpacer(10)
 	pp=exportrow.addImage(importimage);
-	pp.imageSize = new Size(40, 40); // Extra kontroll på bildstorlek
-	exportrow.addSpacer()
-	de=exportrow.addImage(batterychargeimage);
-	de.imageSize = new Size(40, 40); // Extra kontroll på bildstorlek
-	exportrow.addSpacer()
-	ll=exportrow.addImage(batterydischargeimage);
-	ll.imageSize = new Size(40, 40); // Extra kontroll på bildstorlek
-	exportrow.addSpacer()
-	l=exportrow.addImage(batterysocimage);
-	l.imageSize = new Size(40, 40); // Extra kontroll på bildstorlek
-	//exportrow.addSpacer()
-	exportrowr.addSpacer(10)
+	pp.imageSize = new Size(imagesize, imagesize);
 	
-	let exportvalue = exportrowr.addStack()
-	exportvalue.layoutVertically()
-	exportvalue.addSpacer(15)
-	let solarkwhtext = exportvalue.addText(Math.round(solarkwh) + " kWh");
+	sunhomerow.addSpacer(2);
+	kk=sunhomerow.addImage(solarimage);
+	kk.imageSize = new Size(imagesize, imagesize);
+	sunhomerow.addSpacer(9)
+	ss=sunhomerow.addImage(homeimage);
+	ss.imageSize = new Size(imagesize, imagesize);
+	
+	batteryrow.addSpacer(2);
+	de=batteryrow.addImage(batterydischargeimage);
+	de.imageSize = new Size(imagesize, imagesize);
+	batteryrow.addSpacer(10)
+	ll=batteryrow.addImage(batterychargeimage);
+	ll.imageSize = new Size(imagesize, imagesize);
+	
+	percentrow.addSpacer(2);
+	l=percentrow.addImage(batterysocimage);
+	l.imageSize = new Size(imagesize, imagesize);
+	percentrow.addSpacer(10)
+	lp=percentrow.addImage(homepercentimage);
+	lp.imageSize = new Size(imagesize, imagesize);
+	
+	oooo=jjj.addImage(logoimage)
+
+	// Value
+	let exportkwhtext = exportrowvalue.addText(Math.round(exportkwh) + "\nkWh");
+	exportkwhtext.font = Font.lightSystemFont(textsize);
+	exportrowvalue.addSpacer(3);
+	let importkwhtext = exportrowvalue.addText(Math.round(importkwh)+"\nkWh");
+	importkwhtext.font = Font.lightSystemFont(textsize);
+	
+	let solarkwhtext = sunhomerowvalue.addText(Math.round(solarkwh) + "\nkWh");
+	solarkwhtext.font = Font.lightSystemFont(textsize);
+	sunhomerowvalue.addSpacer(4);
+	let homekwhtext = sunhomerowvalue.addText(Math.round(homekwh) + "\nkWh");
+	homekwhtext.font = Font.lightSystemFont(textsize);
+	
+	let batterychargekwhtext = batteryrowvalue.addText(Math.round(batterychargekwh) + "\nkWh");
+	batterychargekwhtext.font = Font.lightSystemFont(textsize);
+	batteryrowvalue.addSpacer(3);
+	let batterydischargekwhtext = batteryrowvalue.addText(Math.round(batterydischargekwh) + "\nkWh");
+	batterydischargekwhtext.font = Font.lightSystemFont(textsize);
+	
+	let batterysoctext = percentrowvalue.addText(Math.round(batterysoc) + "\n%");
+	batterysoctext.font = Font.lightSystemFont(textsize);
+	percentrowvalue.addSpacer(3);
+	let loadpercenttext = percentrowvalue.addText(Math.round(loadpercent) + "\n%");
+	loadpercenttext.font = Font.lightSystemFont(textsize);
+	
 	solarkwhtext.textColor = new Color("#ffffff");
-	solarkwhtext.font = Font.lightSystemFont(20);
-	exportvalue.addSpacer(23)
-	let homewhtext = exportvalue.addText(Math.round(homekwh) + " kWh");
-	homewhtext.textColor = new Color("#ffffff");
-	homewhtext.font = Font.lightSystemFont(20);
-	exportvalue.addSpacer(23)
-	let exportkwhtext = exportvalue.addText(Math.round(exportkwh) + " kWh");
+	homekwhtext.textColor = new Color("#ffffff");
 	exportkwhtext.textColor = new Color("#ffffff");
-	exportkwhtext.font = Font.lightSystemFont(20);
-	exportvalue.addSpacer(23)
-	let importkwhtext = exportvalue.addText(Math.round(importkwh) + " kWh");
 	importkwhtext.textColor = new Color("#ffffff");
-	importkwhtext.font = Font.lightSystemFont(20);
-	exportvalue.addSpacer(23)
-	let batterychargekwhtext = exportvalue.addText(Math.round(batterychargekwh) + " kWh");
 	batterychargekwhtext.textColor = new Color("#ffffff");
-	batterychargekwhtext.font = Font.lightSystemFont(20);
-	exportvalue.addSpacer(23)
-	let batterydischargekwhtext = exportvalue.addText(Math.round(batterydischargekwh) + " kWh");
 	batterydischargekwhtext.textColor = new Color("#ffffff");
-	batterydischargekwhtext.font = Font.lightSystemFont(20);
-	exportvalue.addSpacer(23)
-	let batterysoctext = exportvalue.addText(Math.round(batterysoc) + " %");
 	batterysoctext.textColor = new Color("#ffffff");
-	batterysoctext.font = Font.lightSystemFont(20);
-	listwidget.backgroundColor = new Color("#000000");
-	await renderSection("top");
-	//await renderSection("middle");
-	//await renderSection("bottom");  
-	listwidget.addSpacer(0);
-	let moms = listwidget.addStack();
-	momstext = moms.addText("v. " + version);
-	momstext.font = Font.lightSystemFont(10);
-	momstext.textColor = new Color("#ffffff");
-	moms.addSpacer();
-	momstext = moms.addText("updated " + settings.updatehour + ":" + settings.updateminute);
-	momstext.font = Font.lightSystemFont(10);
-	momstext.textColor = new Color("#ffffff");
-	return listwidget;
+	loadpercenttext.textColor = new Color("#ffffff");
+
+  return listwidget;
 }
 
+const smallFont = 10;
+const mediumFont = 12;
+const bigFont = 13.5;
+const hours = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23];
+
+const now = new Date();
+// Hämta antalet dagar i innevarande månad
+const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+// Skapa array från 1 till antal dagar
+const daysArray = Array.from({ length: daysInMonth }, (_, i) => i + 1);
+
+let listwidget = new ListWidget();
 widget = await createWidget();
 
 if (config.runsInWidget) {
