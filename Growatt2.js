@@ -4,7 +4,7 @@
 // License: Personal use only. See LICENSE for details.
 // This script was created by Flopp999
 // Support me with a coffee https://www.buymeacoffee.com/flopp999 
-let version = 0.39
+let version = 0.40
 let widget;
 let day;
 let date;
@@ -28,6 +28,7 @@ let currency;
 let vat;
 let includevat;
 let extras;
+let ppv;
 
 const fileNameSettings = Script.name() + "_Settings.json";
 const fileNameTranslations = Script.name() + "_Translations.json";
@@ -259,6 +260,7 @@ async function fetchData() {
 	data = JSON.parse(content);
 	
 	if (settings.deviceType == "min") {
+		ppv = data["data"][settings.deviceType][0]["ppv"];
 		epv1 = data["data"][settings.deviceType][0]["epv1Today"];
 		epv2 = data["data"][settings.deviceType][0]["epv2Today"];
 		solarkwh = epv1+epv2
@@ -657,7 +659,6 @@ async function createWidget(){
 	listwidget.addSpacer(5)
 	
 	const date = new Date();
-	let solarkwh = epv1+epv2
 	let first = listwidget.addStack()
 	let spacesize = 3;
 	let textsize = 17;
@@ -679,7 +680,7 @@ async function createWidget(){
 	growattrow.addSpacer(spacesize)
 	let percentrowvalue=growattrow.addStack()
 	listwidget.addSpacer(5)
-	let jjj=listwidget.addStack()
+	let realtimevalue=listwidget.addStack()
 	exportrow.layoutVertically()
 	exportrowvalue.layoutVertically()
 	sunhomerow.layoutVertically()
@@ -688,14 +689,15 @@ async function createWidget(){
 	batteryrowvalue.layoutVertically()
 	percentrow.layoutVertically()
 	percentrowvalue.layoutVertically()
+	realtimevalue.layoutHorizontal()
 	
 	let fm = FileManager.iCloud()
 	let exportpath = fm.joinPath(fm.documentsDirectory(), "export.png")
 	exportimage = await fm.readImage(exportpath)
 	let importpath = fm.joinPath(fm.documentsDirectory(), "import.png")
 	importimage = await fm.readImage(importpath)
-	let solarpath = fm.joinPath(fm.documentsDirectory(), "sun.png")
-	solarimage = await fm.readImage(solarpath)
+	let sunpath = fm.joinPath(fm.documentsDirectory(), "sun.png")
+	sunimage = await fm.readImage(sunpath)
 	let homepath = fm.joinPath(fm.documentsDirectory(), "home.png")
 	homeimage = await fm.readImage(homepath)
 	loadpercent=(homekwh-importkwh)/homekwh*100
@@ -726,8 +728,7 @@ async function createWidget(){
 	  batterysocpath = fm.joinPath(fm.documentsDirectory(), "batterysocgreen.png")
 	}
 	batterysocimage = await fm.readImage(batterysocpath)
-	let logopath = fm.joinPath(fm.documentsDirectory(), "logo.png")
-	logoimage = await fm.readImage(logopath)
+	
 	
 	exportrow.addSpacer(2);
 	ii=exportrow.addImage(exportimage);
@@ -737,7 +738,7 @@ async function createWidget(){
 	pp.imageSize = new Size(imagesize, imagesize);
 	
 	sunhomerow.addSpacer(2);
-	kk=sunhomerow.addImage(solarimage);
+	kk=sunhomerow.addImage(sunimage);
 	kk.imageSize = new Size(imagesize, imagesize);
 	sunhomerow.addSpacer(9)
 	ss=sunhomerow.addImage(homeimage);
@@ -756,8 +757,10 @@ async function createWidget(){
 	percentrow.addSpacer(10)
 	lp=percentrow.addImage(homepercentimage);
 	lp.imageSize = new Size(imagesize, imagesize);
-	
-	oooo=jjj.addImage(logoimage)
+
+	ked=realtimevalue.addImage(sunimage);
+	ked.imageSize = new Size(imagesize, imagesize);
+	percentrow.addSpacer()
 
 	// Value
 	let exportkwhtext = exportrowvalue.addText(Math.round(exportkwh) + "\nkWh");
@@ -783,6 +786,9 @@ async function createWidget(){
 	percentrowvalue.addSpacer(3);
 	let loadpercenttext = percentrowvalue.addText(Math.round(loadpercent) + "\n%");
 	loadpercenttext.font = Font.lightSystemFont(textsize);
+
+	let realtimevaluetext = realtimevalue.addText(Math.round(12) + "W");
+	realtimevaluetext.font = Font.lightSystemFont(textsize);
 	
 	solarkwhtext.textColor = new Color("#ffffff");
 	homekwhtext.textColor = new Color("#ffffff");
