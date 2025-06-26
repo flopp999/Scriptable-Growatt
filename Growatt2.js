@@ -5,8 +5,6 @@
 // This script was created by Flopp999
 // Support me with a coffee https://www.buymeacoffee.com/flopp999 
 let version = 0.33
-let token;
-let deviceSn;
 let widget;
 let day;
 let date;
@@ -35,14 +33,14 @@ if (!config.runsInWidget){
 	await updatecode();
 	await readTranslations();
 	await readsettings();
-	await createVariables();
+	//await createVariables();
 	//await start();
 }
 
 if (config.runsInWidget){
 	await readsettings();
 	await updatecode();
-	await createVariables();
+	//await createVariables();
 }
 
 async function start() {
@@ -195,7 +193,7 @@ async function getDeviceType() {
 	req.method = "POST";
 	req.headers = {
 		"Content-Type": "application/x-www-form-urlencoded",
-		"token": token
+		"token": settings.token
 	};
 	try {
 		req.timeoutInterval = 10;
@@ -223,7 +221,7 @@ async function fetchData() {
 		req.method = "POST";
 		req.headers = {
 			"Content-Type": "application/x-www-form-urlencoded",
-			"token": token
+			"token": settings.token
 		};
 		req.body = `deviceSn=${encodeURIComponent(settings.deviceSn)}&deviceType=${encodeURIComponent(settings.deviceType)}`;
 		try {
@@ -303,13 +301,6 @@ async function fetchData() {
 	}
 }
 
-async function createVariables() {
-	token = settings.token;
-	deviceSn = settings.deviceSn;
-	hour = settings.updatehour;
-	minute = settings.updateminute;
-}
-
 async function readTranslations() {
 	if (!fm.fileExists(filePathTranslations)) {
 		let url = "https://raw.githubusercontent.com/flopp999/Scriptable-Growatt/main/Translations.json";
@@ -339,6 +330,7 @@ function t(key) {
 async function ask() {
 	settings.token = await askForToken();
 	settings.deviceSn = await askForDeviceSn();
+	fm.writeString(filePathSettings, JSON.stringify(settings, null, 2));
 	return settings
 }
 
@@ -350,7 +342,7 @@ async function askForLanguage() {
 	alert.addAction("Svenska");
 	let index = await alert.presentAlert();
 	settings.language = [1,3][index];
-	fm.writeString(filePathSettings, JSON.stringify(settings, null, 2)); // Pretty print
+	fm.writeString(filePathSettings, JSON.stringify(settings, null, 2));
 	langId = settings.language; // 1 = ENG, 2 = DE, 3 = SV
 	return [1,3][index];
 }
@@ -364,7 +356,7 @@ async function askForToken() {
 	alert.addAction("OK");
 	await alert.present();
 	let input = alert.textFieldValue(0);
-	token = input
+	settings.token = input
 	return input;
 }
 
@@ -377,7 +369,7 @@ async function askForDeviceSn() {
 	alert.addAction("OK");
 	await alert.present();
 	let input = alert.textFieldValue(0);
-	deviceSn = input;
+	settings.deviceSn = input;
 	return input;
 }
 
