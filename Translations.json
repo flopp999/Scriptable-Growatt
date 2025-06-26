@@ -1,7 +1,11 @@
 {
-  "": {
-    "en": "",
-    "sv": ""
+  "doyouwantvat": {
+    "en": "Do you want the prices shown with or without VAT",
+    "sv": "Hur ska elpriserna visas"
+  },
+  "chooseyourelectricityarea": {
+    "en": "Choose your electricity area",
+    "sv": "Välj ditt elområde"
   },
   "askfortoken": {
     "en": "Enter the token created on the Growatt website",
@@ -15,9 +19,9 @@
     "en": "Deactivated",
     "sv": "Avaktiverad"
   },
-  "savings": {
-    "en": "Savings",
-    "sv": "Besparingar"
+  "withoutvat": {
+    "en": "Without VAT",
+    "sv": "Utan moms"
   },  
   "bar": {
     "en": "Bar",
