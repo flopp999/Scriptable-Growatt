@@ -4,7 +4,7 @@
 // License: Personal use only. See LICENSE for details.
 // This script was created by Flopp999
 // Support me with a coffee https://www.buymeacoffee.com/flopp999 
-let version = 0.32
+let version = 0.33
 let token;
 let deviceSn;
 let widget;
@@ -75,7 +75,6 @@ async function downLoadFiles() {
 		"import.png",
 		"solar.png"
 	]
-	// Ladda ner varje fil
 	for (let filename of filesToDownload) {
 		const url = baseUrl + filename
 		const filePath = fm.joinPath(dir, filename)
@@ -302,11 +301,6 @@ async function fetchData() {
 		batterychargekwh = data["data"][settings.deviceType][0]["echarge1Today"];
 		batterydischargekwh = data["data"][settings.deviceType][0]["edischarge1Today"];
 	}
-		
-
-
-		
-//	updated = "" + hour + minute + "";
 }
 
 async function createVariables() {
@@ -399,9 +393,7 @@ const daysArray = Array.from({ length: daysInMonth }, (_, i) => i + 1);
 async function renderSection(position) {
 	const value = settings[`showat${position}`];
 	if (!value || value === "nothing") return;
-	
 	const [type, day] = value.split(",").map(s => s.trim());
-	
 	const graphOption = settings.graphOption[position]
 	switch (type) {
 		case "status":
@@ -480,30 +472,34 @@ async function createWidget(){
 	
 	let exportvalue = exportrowr.addStack()
 	exportvalue.layoutVertically()
-	
 	exportvalue.addSpacer(15)
 	let solarkwhtext = exportvalue.addText(Math.round(solarkwh) + " kWh");
+	solarkwhtext.textColor = new Color("#ffffff");
+	solarkwhtext.font = Font.lightSystemFont(10);
 	exportvalue.addSpacer(23)
 	let homewhtext = exportvalue.addText(Math.round(homekwh) + " kWh");
+	homewhtext.textColor = new Color("#ffffff");
+	homewhtext.font = Font.lightSystemFont(10);
 	exportvalue.addSpacer(23)
 	let exportkwhtext = exportvalue.addText(Math.round(exportkwh) + " kWh");
+	exportkwhtext.textColor = new Color("#ffffff");
+	exportkwhtext.font = Font.lightSystemFont(10);
 	exportvalue.addSpacer(23)
 	let importkwhtext = exportvalue.addText(Math.round(importkwh) + " kWh");
+	importkwhtext.textColor = new Color("#ffffff");
+	importkwhtext.font = Font.lightSystemFont(10);
 	exportvalue.addSpacer(23)
 	let batterychargekwhtext = exportvalue.addText(Math.round(batterychargekwh) + " kWh");
+	batterychargekwhtext.textColor = new Color("#ffffff");
+	batterychargekwhtext.font = Font.lightSystemFont(10);
 	exportvalue.addSpacer(23)
 	let batterydischargekwhtext = exportvalue.addText(Math.round(batterydischargekwh) + " kWh");
+	batterydischargekwhtext.textColor = new Color("#ffffff");
+	batterydischargekwhtext.font = Font.lightSystemFont(10);
 	exportvalue.addSpacer(23)
 	let batterysoctext = exportvalue.addText(Math.round(batterysoc) + " %");
-	
-	solarkwhtext.textColor = new Color("#ffffff");
-	homewhtext.textColor = new Color("#ffffff");
-	exportkwhtext.textColor = new Color("#ffffff");
-	importkwhtext.textColor = new Color("#ffffff");
-	batterychargekwhtext.textColor = new Color("#ffffff");
-	batterydischargekwhtext.textColor = new Color("#ffffff");
 	batterysoctext.textColor = new Color("#ffffff");
-	
+	batterysoctext.font = Font.lightSystemFont(10);
 	listwidget.backgroundColor = new Color("#000000");
 	await renderSection("top");
 	//await renderSection("middle");
