@@ -4,7 +4,7 @@
 // License: Personal use only. See LICENSE for details.
 // This script was created by Flopp999
 // Support me with a coffee https://www.buymeacoffee.com/flopp999 
-let version = 0.34
+let version = 0.35
 let widget;
 let day;
 let date;
@@ -405,7 +405,7 @@ let listwidget = new ListWidget();
 
 async function createWidget(){
 	//token = set loginAndGetToken();
-	if (settings.deviceType == "") {
+	if (!settings.deviceType || settings.deviceType.length === 0 || settings.deviceType == "") {
 		await getDeviceType();
 	}
 	await fetchData(settings.deviceType);
