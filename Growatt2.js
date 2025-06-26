@@ -257,6 +257,7 @@ async function fetchData() {
 	}
 	let content = fm.readString(filePathData);
 	data = JSON.parse(content);
+	
 	if (settings.deviceType == "min") {
 		epv1 = data["data"][settings.deviceType][0]["epv1Today"];
 		epv2 = data["data"][settings.deviceType][0]["epv2Today"];
@@ -505,7 +506,7 @@ async function Graph(day, graphOption) {
           },\
           {\
             data: ["+pricesJSON+"],\
-            type: '"+settings.graphOption+"',\
+            type: '"+settings.graphOption.top+"',\
             fill: false,\
             borderColor: getGradientFillHelper('vertical',['rgb(255,25,255)','rgb(255,48,8)','rgb(255,127,39)','rgb(255,255,0)','rgb(57,118,59)']),\
             borderWidth: 20, \
