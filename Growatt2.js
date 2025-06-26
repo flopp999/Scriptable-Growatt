@@ -22,7 +22,6 @@ let pricesJSON;
 let priceAvg;
 let priceLowest;
 let priceHighest;
-let area;
 let resolution;
 let currency;
 let vat;
