@@ -4,7 +4,7 @@
 // License: Personal use only. See LICENSE for details.
 // This script was created by Flopp999
 // Support me with a coffee https://www.buymeacoffee.com/flopp999 
-let version = 0.36
+let version = 0.37
 let widget;
 let day;
 let date;
@@ -133,6 +133,9 @@ async function readsettings() {
 		if (fm.fileExists(filePathSettings)) {
 			let raw = fm.readString(filePathSettings);
 			settings = JSON.parse(raw);
+			if (!settings.area) {
+				await askForArea();
+			}
 			if (!settings.deviceType || settings.deviceType.length === 0) {
 				settings.deviceType = ""
 			}
@@ -380,7 +383,9 @@ async function askForExtras() {
   let input = alert.textFieldValue(0);
   input = input.replace(",", ".")
   let newCost = parseFloat(input);
-  return newCost;
+  settings.extras  = newCost
+	fm.writeString(filePathSettings, JSON.stringify(settings, null, 2));
+	return newCost;
 }
 
 async function askForIncludeVAT() {
@@ -389,6 +394,8 @@ async function askForIncludeVAT() {
   alert.addAction(t("withvat"));
   alert.addAction(t("withoutvat"));
   let index = await alert.presentAlert();
+	settings.includevat = input
+	fm.writeString(filePathSettings, JSON.stringify(settings, null, 2));
   return [1,0][index];
 }
 
@@ -400,10 +407,11 @@ async function askForArea() {
     alert.addAction(area);
   }
   let index = await alert.presentAlert();
-  let area = ["SE1","SE2","SE3","SE4"][index];
-  let vat = 25;
-  let currencies = "SEK";
-  return [area, vat, currencies];
+  settings.area = ["SE1","SE2","SE3","SE4"][index];
+  settings.vat = 25;
+  settings.currencies = "SEK";
+	fm.writeString(filePathSettings, JSON.stringify(settings, null, 2));
+  return [settings.area, settings.vat, settings.currencies];
 }
 
 // Select resolution
@@ -429,6 +437,7 @@ async function askForToken() {
 	await alert.present();
 	let input = alert.textFieldValue(0);
 	settings.token = input
+	fm.writeString(filePathSettings, JSON.stringify(settings, null, 2));
 	return input;
 }
 
@@ -627,11 +636,11 @@ async function createWidget(){
   momstext.font = Font.lightSystemFont(10);
   momstext.textColor = new Color("#ffffff");
   moms.addSpacer();
-  momstext = moms.addText(area);
+  momstext = moms.addText(settings.area);
   momstext.font = Font.lightSystemFont(10);
   momstext.textColor = new Color("#ffffff");
   moms.addSpacer();
-  momstext = moms.addText("Extras: " + extras);
+  momstext = moms.addText("Extras: " + settings.extras);
   momstext.font = Font.lightSystemFont(10);
   momstext.textColor = new Color("#ffffff");
   moms.addSpacer();
