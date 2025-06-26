@@ -4,7 +4,7 @@
 // License: Personal use only. See LICENSE for details.
 // This script was created by Flopp999
 // Support me with a coffee https://www.buymeacoffee.com/flopp999 
-let version = 0.40
+let version = 0.41
 let widget;
 let day;
 let date;
@@ -681,6 +681,10 @@ async function createWidget(){
 	let percentrowvalue=growattrow.addStack()
 	listwidget.addSpacer(5)
 	let realtimevalue=listwidget.addStack()
+	realtimevalue.addSpacer(spacesize)
+	let realtimevalueimage=listwidget.addStack()
+	let realtimevaluetext=listwidget.addStack()
+	
 	exportrow.layoutVertically()
 	exportrowvalue.layoutVertically()
 	sunhomerow.layoutVertically()
@@ -689,7 +693,9 @@ async function createWidget(){
 	batteryrowvalue.layoutVertically()
 	percentrow.layoutVertically()
 	percentrowvalue.layoutVertically()
-	realtimevalue.layoutHorizontal()
+	realtimevalue.layoutHorizontally()
+	realtimevalueimage.layoutVertically()
+	realtimevaluetext.layoutVertically()
 	
 	let fm = FileManager.iCloud()
 	let exportpath = fm.joinPath(fm.documentsDirectory(), "export.png")
@@ -758,9 +764,9 @@ async function createWidget(){
 	lp=percentrow.addImage(homepercentimage);
 	lp.imageSize = new Size(imagesize, imagesize);
 
-	ked=realtimevalue.addImage(sunimage);
+	realtimevalueimage.addSpacer(2);
+	ked=realtimevalueimage.addImage(sunimage);
 	ked.imageSize = new Size(imagesize, imagesize);
-	percentrow.addSpacer()
 
 	// Value
 	let exportkwhtext = exportrowvalue.addText(Math.round(exportkwh) + "\nkWh");
@@ -787,8 +793,8 @@ async function createWidget(){
 	let loadpercenttext = percentrowvalue.addText(Math.round(loadpercent) + "\n%");
 	loadpercenttext.font = Font.lightSystemFont(textsize);
 
-	let realtimevaluetext = realtimevalue.addText(Math.round(12) + "W");
-	realtimevaluetext.font = Font.lightSystemFont(textsize);
+	let realtimevaluetext2 = realtimevaluetext.addText(Math.round(ppv) + "\nW");
+	realtimevaluetext2.font = Font.lightSystemFont(textsize);
 	
 	solarkwhtext.textColor = new Color("#ffffff");
 	homekwhtext.textColor = new Color("#ffffff");
@@ -798,6 +804,7 @@ async function createWidget(){
 	batterydischargekwhtext.textColor = new Color("#ffffff");
 	batterysoctext.textColor = new Color("#ffffff");
 	loadpercenttext.textColor = new Color("#ffffff");
+	realtimevaluetext2.textColor = new Color("#ffffff");
 
   return listwidget;
 }
