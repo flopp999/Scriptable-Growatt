@@ -681,9 +681,9 @@ async function createWidget(){
 	let percentrowvalue=growattrow.addStack()
 	listwidget.addSpacer(5)
 	let realtimevalue=listwidget.addStack()
+	let realtimevalueimage=realtimevalue.addStack()
 	realtimevalue.addSpacer(spacesize)
-	let realtimevalueimage=listwidget.addStack()
-	let realtimevaluetext=listwidget.addStack()
+	let realtimevaluetext=realtimevalue.addStack()
 	
 	exportrow.layoutVertically()
 	exportrowvalue.layoutVertically()
