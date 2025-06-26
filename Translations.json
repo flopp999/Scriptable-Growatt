@@ -1,4 +1,8 @@
 {
+  "updated": {
+    "en": "Updated ",
+    "sv": "Uppdaterad "
+  },
   "highest": {
     "en": "highest",
     "sv": "högsta"
@@ -44,8 +48,8 @@
     "sv": "Välj typ av graf"
   },
   "now": {
-    "en": "Now",
-    "sv": "Nu"
+    "en": "now",
+    "sv": "nu"
   },
   "top": {
     "en": "at the top",
