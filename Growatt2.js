@@ -4,7 +4,7 @@
 // License: Personal use only. See LICENSE for details.
 // This script was created by Flopp999
 // Support me with a coffee https://www.buymeacoffee.com/flopp999 
-let version = 0.31
+let version = 0.32
 let token;
 let deviceSn;
 let widget;
@@ -275,6 +275,32 @@ async function fetchData() {
 		importkwh = data["data"][settings.deviceType][0]["eToUserToday"];
 		batterychargekwh = data["data"][settings.deviceType][0]["etoday"];
 		batterydischargekwh = data["data"][settings.deviceType][0]["eBatDisChargeToday"];
+	} else if (settings.deviceType == "inv") {
+		epv1 = data["data"][settings.deviceType][0]["epv1Today"];
+		epv2 = data["data"][settings.deviceType][0]["epv2Today"];
+		solarkwh = epv1+epv2
+	} else if (settings.deviceType == "max") {
+		solarkwh = data["data"][settings.deviceType][0]["eacToday"];
+	} else if (settings.deviceType == "sph") {
+		epv1 = data["data"][settings.deviceType][0]["epv1Today"];
+		epv2 = data["data"][settings.deviceType][0]["epv2Today"];
+		solarkwh = epv1+epv2
+		batterysoc = data["data"][settings.deviceType][0]["soc"];
+		homekwh = data["data"][settings.deviceType][0]["elocalLoadToday"];
+		exportkwh = data["data"][settings.deviceType][0]["etoGridToday"];
+		importkwh = data["data"][settings.deviceType][0]["etoUserToday"];
+		batterychargekwh = data["data"][settings.deviceType][0]["echarge1Today"];
+		batterydischargekwh = data["data"][settings.deviceType][0]["edischarge1Today"];
+	} else if (settings.deviceType == "sph-s") {
+		epv1 = data["data"][settings.deviceType][0]["epv1Today"];
+		epv2 = data["data"][settings.deviceType][0]["epv2Today"];
+		solarkwh = epv1+epv2
+		batterysoc = data["data"][settings.deviceType][0]["soc"];
+		homekwh = data["data"][settings.deviceType][0]["elocalLoadToday"];
+		exportkwh = data["data"][settings.deviceType][0]["etoGridToday"];
+		importkwh = data["data"][settings.deviceType][0]["etoUserToday"];
+		batterychargekwh = data["data"][settings.deviceType][0]["echarge1Today"];
+		batterydischargekwh = data["data"][settings.deviceType][0]["edischarge1Today"];
 	}
 		
 
