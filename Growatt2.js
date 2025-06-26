@@ -4,7 +4,7 @@
 // License: Personal use only. See LICENSE for details.
 // This script was created by Flopp999
 // Support me with a coffee https://www.buymeacoffee.com/flopp999 
-let version = 0.37
+let version = 0.39
 let widget;
 let day;
 let date;
@@ -394,7 +394,7 @@ async function askForIncludeVAT() {
   alert.addAction(t("withvat"));
   alert.addAction(t("withoutvat"));
   let index = await alert.presentAlert();
-	settings.includevat = input
+	settings.includevat = [1,0][index];
 	fm.writeString(filePathSettings, JSON.stringify(settings, null, 2));
   return [1,0][index];
 }
@@ -409,9 +409,9 @@ async function askForArea() {
   let index = await alert.presentAlert();
   settings.area = ["SE1","SE2","SE3","SE4"][index];
   settings.vat = 25;
-  settings.currencies = "SEK";
+  currencies = "SEK";
 	fm.writeString(filePathSettings, JSON.stringify(settings, null, 2));
-  return [settings.area, settings.vat, settings.currencies];
+  return [settings.area, settings.vat, currencies];
 }
 
 // Select resolution
@@ -452,7 +452,7 @@ async function Graph(day, graphOption) {
   let updatetext = left.addText("Nord Pool " + updated);
   updatetext.font = Font.lightSystemFont(13);
   updatetext.textColor = new Color("#ffffff");
-  if (resolution == 60) {
+  if (settings.resolution == 60) {
     let avgtoday = []
     let dotNow = ""
     let countertoday = 0
@@ -505,7 +505,7 @@ async function Graph(day, graphOption) {
           },\
           {\
             data: ["+pricesJSON+"],\
-            type: '"+graphOption+"',\
+            type: '"+settings.graphOption+"',\
             fill: false,\
             borderColor: getGradientFillHelper('vertical',['rgb(255,25,255)','rgb(255,48,8)','rgb(255,127,39)','rgb(255,255,0)','rgb(57,118,59)']),\
             borderWidth: 20, \
@@ -582,7 +582,7 @@ async function Data(day) {
     const mm = String(DateObj.getMonth() + 1).padStart(2, '0');
     const dd = String(DateObj.getDate()).padStart(2, '0');
     const date = `${yyyy}-${mm}-${dd}`;
-    const Url = `https://dataportal-api.nordpoolgroup.com/api/DayAheadPriceIndices?date=${date}&market=DayAhead&indexNames=${area}&currency=${currency}&resolutionInMinutes=${resolution}`;
+    const Url = `https://dataportal-api.nordpoolgroup.com/api/DayAheadPriceIndices?date=${date}&market=DayAhead&indexNames=${settings.area}&currency=${settings.currency}&resolutionInMinutes=${resolution}`;
     const request = new Request(Url);
     request.timeoutInterval = 1;
     let response = (await request.loadJSON());
@@ -608,8 +608,8 @@ async function Data(day) {
   let Updated = response.updatedAt;
   updated = Updated.replace(/\.\d+Z$/, '').replace('T', ' ');
   for (let i = 0; i < prices.length; i++) {
-    const value = prices[i]["entryPerArea"][`${area}`];
-    allValues.push(String(value/10* (1 + "." + (includevat*vat)) + extras));
+    const value = prices[i]["entryPerArea"][`${settings.area}`];
+    allValues.push(String(value/10* (1 + "." + (settings.includevat*settings.vat)) + settings.extras));
   }
   pricesJSON = JSON.parse(JSON.stringify(allValues));
   priceLowest = (Math.min(...pricesJSON.map(Number)));
@@ -644,7 +644,7 @@ async function createWidget(){
   momstext.font = Font.lightSystemFont(10);
   momstext.textColor = new Color("#ffffff");
   moms.addSpacer();
-  if (includevat == 1) {
+  if (settings.includevat == 1) {
     momstext = moms.addText(t("withvat"));
   }
   else {
