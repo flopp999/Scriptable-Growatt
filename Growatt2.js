@@ -8,9 +8,7 @@ let version = 0.42
 let widget;
 let day;
 let date;
-let language;
 let settings = {}
-let langId;
 let hour;
 let minute;
 let translationData;
@@ -31,14 +29,10 @@ let ppv;
 
 const fileNameSettings = Script.name() + "_Settings.json";
 const fileNameTranslations = Script.name() + "_Translations.json";
-const fileNameData = Script.name() + "_Data.json";
-const fileNameDataYear = Script.name() + "_DataYear.json";
 const fm = FileManager.iCloud();
 const dir = fm.documentsDirectory();
 const filePathSettings = fm.joinPath(dir, fileNameSettings);
 const filePathTranslations = fm.joinPath(dir, fileNameTranslations);
-const filePathData = fm.joinPath(dir, fileNameData);
-const filePathdataYear = fm.joinPath(dir, fileNameDataYear);
 
 if (!config.runsInWidget){
 	//await downLoadFiles();
@@ -157,7 +151,6 @@ async function readsettings() {
 				settings.language = 1
 			}
 			fm.writeString(filePathSettings, JSON.stringify(settings, null, 2));
-			langId = settings.language; // 1 = ENG, 2 = DE, 3 = SV
 			await readTranslations();
 		} else {
 			if (config.runsInWidget) {
@@ -322,7 +315,7 @@ async function readTranslations() {
 			1: "en",
 			3: "sv"
 		};
-		currentLang = langMap[langId] || "en"; // fallback to english
+		currentLang = langMap[settings.language] || "en"; // fallback to english
 	} catch (error) {
 		console.error(error);
 	}
@@ -427,7 +420,6 @@ async function askForLanguage() {
 	let index = await alert.presentAlert();
 	settings.language = [1,3][index];
 	fm.writeString(filePathSettings, JSON.stringify(settings, null, 2));
-	langId = settings.language; // 1 = ENG, 2 = DE, 3 = SV
 	return [1,3][index];
 }
 
@@ -586,7 +578,7 @@ async function Data(day) {
     const mm = String(DateObj.getMonth() + 1).padStart(2, '0');
     const dd = String(DateObj.getDate()).padStart(2, '0');
     const date = `${yyyy}-${mm}-${dd}`;
-    const Url = `https://dataportal-api.nordpoolgroup.com/api/DayAheadPriceIndices?date=${date}&market=DayAhead&indexNames=${settings.area}&currency=${settings.currency}&resolutionInMinutes=${resolution}`;
+    const Url = `https://dataportal-api.nordpoolgroup.com/api/DayAheadPriceIndices?date=${date}&market=DayAhead&indexNames=${settings.area}&currency=${settings.currency}&resolutionInMinutes=${settings.resolution}`;
     const request = new Request(Url);
     request.timeoutInterval = 1;
     let response = (await request.loadJSON());
