@@ -4,7 +4,7 @@
 // License: Personal use only. See LICENSE for details.
 // This script was created by Flopp999
 // Support me with a coffee https://www.buymeacoffee.com/flopp999 
-let version = 0.41
+let version = 0.42
 let widget;
 let day;
 let date;
@@ -75,15 +75,17 @@ async function downLoadFiles() {
 		"sun.png"
 	]
 	for (let filename of filesToDownload) {
-		const url = baseUrl + filename
 		const filePath = fm.joinPath(dir, filename)
-		try {
-			const req = new Request(url)
-			req.timeoutInterval = 10
-			const image = await req.loadImage()
-			fm.writeImage(filePath, image)
-		} catch (error) {
-			console.error(`Fel vid nedladdning av ${filename}:`, error)
+		if (!fm.fileExists(filePath)) {
+			const url = baseUrl + filename
+			try {
+				const req = new Request(url)
+				req.timeoutInterval = 10
+				const image = await req.loadImage()
+				fm.writeImage(filePath, image)
+			} catch (error) {
+				console.error(`Fel vid nedladdning av ${filename}:`, error)
+			}
 		}
 	}
 }
