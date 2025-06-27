@@ -4,7 +4,7 @@
 // License: Personal use only. See LICENSE for details.
 // This script was created by Flopp999
 // Support me with a coffee https://www.buymeacoffee.com/flopp999 
-let version = 0.43
+let version = 0.44
 let widget;
 let day;
 let date;
@@ -228,6 +228,9 @@ async function fetchData() {
 			req.timeoutInterval = 10;
 			const response = await req.loadJSON();
 			if (req.response.statusCode === 200) {
+				if (response["message"] = "FREQUENTLY_ACCESS") {
+					return
+				}
 				const dataJSON = JSON.stringify(response, null ,2);
 				fm.writeString(filePathData, dataJSON);
 				settings.updatehour = String(DateObj.getHours()).padStart(2,"0");
