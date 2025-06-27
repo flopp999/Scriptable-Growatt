@@ -4,7 +4,7 @@
 // License: Personal use only. See LICENSE for details.
 // This script was created by Flopp999
 // Support me with a coffee https://www.buymeacoffee.com/flopp999 
-let version = 0.42
+let version = 0.43
 let widget;
 let day;
 let date;
@@ -27,10 +27,12 @@ let includevat;
 let extras;
 let ppv;
 
+const fileNameData = Script.name() + "_Data.json";
 const fileNameSettings = Script.name() + "_Settings.json";
 const fileNameTranslations = Script.name() + "_Translations.json";
 const fm = FileManager.iCloud();
 const dir = fm.documentsDirectory();
+const filePathData = fm.joinPath(dir, fileNameData);
 const filePathSettings = fm.joinPath(dir, fileNameSettings);
 const filePathTranslations = fm.joinPath(dir, fileNameTranslations);
 
