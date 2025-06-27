@@ -363,10 +363,10 @@ async function PriceStats(day) {
   avg.font = Font.lightSystemFont(11);
   avg.textColor = new Color("#f38");
   bottom.addSpacer();
-  // highest
+  // t
   let highest = bottom.addText(t("highest") + " " + Math.round(priceHighest));
   highest.font = Font.lightSystemFont(11);
-  highest.textColor = new Color("#ff1c00");
+  highest.textColor = new Color("#ff19ff");
   listwidget.addSpacer(5);
 }
 
