@@ -4,7 +4,7 @@
 // License: Personal use only. See LICENSE for details.
 // This script was created by Flopp999
 // Support me with a coffee https://www.buymeacoffee.com/flopp999 
-let version = 0.45
+let version = 0.46
 let widget;
 let day;
 let date;
@@ -26,6 +26,9 @@ let vat;
 let includevat;
 let extras;
 let ppv;
+const loginUrl = "https://shineserver.growatt.com/server-pro/login"
+const plantListUrl = "https://shineserver.growatt.com/server-pro/plant/getPlantBasicList"
+const overviewUrl = "https://shineserver.growatt.com/server-pro/plant/overview/data"
 
 const fileNameData = Script.name() + "_Data.json";
 const fileNameSettings = Script.name() + "_Settings.json";
@@ -140,6 +143,11 @@ async function readsettings() {
 			if (!settings.username || settings.username.length === 0) {
 				await askForUsername();
 			}
+			if (!settings.password || settings.password.length === 0) {
+				await askForPassword();
+			}
+
+			
 			if (!settings.deviceSn || settings.deviceSn.length === 0) {
 				settings.deviceSn = "deviceSn"
 			}
@@ -356,7 +364,7 @@ async function loginAndGetToken() {
   const req = new Request(loginUrl)
   req.method = "POST"
   req.headers = { "Content-Type": "application/json;charset=UTF-8" }
-  req.body = JSON.stringify({ settings.username, password: skapaPwd(password) })
+  req.body = JSON.stringify({ username: settings.username, password: skapaPwd(settings.password) })
   const res = await req.loadJSON()
  //log(res.code)
    //if (res.code !== 0 || !res.data.token) throw new Error("❌ Inloggning misslyckades")
@@ -811,14 +819,48 @@ async function Data(day) {
   priceAvg = pricesJSON.map(Number).reduce((a, b) => a + b, 0) / pricesJSON.length;
 }
 
+// === Hämta plantId ===
+async function getPlantId(token) {
+  const req = new Request(plantListUrl)
+  req.method = "POST"
+  req.headers = {
+    "Authorization": `Bearer ${token}`,
+    "token": `Bearer ${token}`
+  }
+  req.body = ""
+  const res = await req.loadJSON()
+  const plantId = res.data?.[0]?.id
+  if (!plantId) throw new Error("❌ Kunde inte hämta plantId")
+  return plantId
+}
+
+// === Hämta översiktsdata ===
+async function getOverview(token, plantId) {
+  const req = new Request(overviewUrl)
+  req.method = "POST"
+  req.headers = {
+    "Authorization": `Bearer ${token}`,
+    "token": `Bearer ${token}`,
+    "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8"
+  }
+  req.body = `plantId=${plantId}`
+  const res = await req.loadJSON()
+  if (!res.data) throw new Error("❌ Ingen data från servern")
+  return res.data
+}
+
 async function createWidget(){
 	//token = set loginAndGetToken();
 	listwidget.backgroundColor = new Color("#000000");
 	//if (!settings.deviceType || settings.deviceType.length === 0 || settings.deviceType == "") {
 		//await getDeviceType();
 	//}
-	await login();
-	await fetchData(settings.deviceType);
+	const token = await loginAndGetToken()
+  const plantId = await getPlantId(token)
+  const data = await getOverview(token, plantId)
+  const widget = await createWidget(data)
+//		await loginAndGetToken();
+	//await fetchData(settings.deviceType);
 	await renderSection("top");
   await renderSection("middle");
 	let moms = listwidget.addStack();
