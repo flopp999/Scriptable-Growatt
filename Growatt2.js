@@ -846,16 +846,16 @@ async function getOverview(token, plantId) {
   req.body = `plantId=${plantId}`
   const res = await req.loadJSON()
   if (!res.data) throw new Error("❌ Ingen data från servern")
-	ppv = parseFloat(data.plantCardVo.pvCard?.ppv || 0):
+	ppv = parseFloat(res.data.plantCardVo.pvCard?.ppv || 0);
 	//epv1 = parseFloat(data.plantCardVo.batteryCard?.todayEnergy || 0):
 	//epv2 = parseFloat(data.plantCardVo.batteryCard?.todayEnergy || 0):
-	solarkwh = parseFloat(data.plantCardVo.pvCard?.todayEnergy || 0):
-	batterysoc = parseFloat(data.plantDeviceDataVo.batteryData?.soc || 0):
-	homekwh = parseFloat(data.plantCardVo.payLoadCard?.eselfToday || 0):
-	exportkwh = parseFloat(data.plantCardVo.gridCard?.reverseActiveTodayEnergy || 0):
-	importkwh = parseFloat(data.plantCardVo.gridCard?.reverseActiveTodayEnergy || 0):
-	batterychargekwh = parseFloat(data.plantCardVo.batteryCard?.chargeToday || 0):
-	batterydischargekwh = parseFloat(data.plantCardVo.batteryCard?.dischargeToday || 0):
+	solarkwh = parseFloat(res.data.plantCardVo.pvCard?.todayEnergy || 0);
+	batterysoc = parseFloat(res.data.plantDeviceDataVo.batteryData?.[0]?.soc || 0)
+	homekwh = parseFloat(res.data.plantCardVo.payLoadCard?.eselfToday || 0)
+	exportkwh = parseFloat(res.data.plantCardVo.gridCard?.reverseActiveTodayEnergy || 0)
+	importkwh = parseFloat(res.data.plantCardVo.gridCard?.reverseActiveTodayEnergy || 0)
+	batterychargekwh = parseFloat(res.data.plantCardVo.batteryCard?.chargeToday || 0)
+	batterydischargekwh = parseFloat(res.data.plantCardVo.batteryCard?.dischargeToday || 0)
   return
 }
 
