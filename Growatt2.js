@@ -4,7 +4,7 @@
 // License: Personal use only. See LICENSE for details.
 // This script was created by Flopp999
 // Support me with a coffee https://www.buymeacoffee.com/flopp999 
-let version = 0.49
+let version = 0.50
 let widget;
 let day;
 let res;
@@ -861,7 +861,7 @@ async function getOverview(token, plantId) {
 	let content = fm.readString(filePathData);
 	data = JSON.parse(content);
 	
-	ppv = parseFloat(res.data.plantCardVo.pvCard?.ppv || 0);
+	ppv = parseFloat(data.data.plantCardVo.pvCard?.ppv || 0);
 		if (ppv > 1000) {
 			ppv = ( ppv / 1000).toFixed(1) + "\nkW"
 		} else {
