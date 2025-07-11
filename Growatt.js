@@ -73,7 +73,7 @@ async function downLoadFiles() {
 		"export.png",
 		"home.png",
 		"import.png",
-		"solar.png"
+		"sun.png"
 	]
 	// Ladda ner varje fil
 	for (let filename of filesToDownload) {
@@ -417,7 +417,7 @@ async function createWidget(){
 	exportimage = await fm.readImage(exportpath)
 	let importpath = fm.joinPath(fm.documentsDirectory(), "import.png")
 	importimage = await fm.readImage(importpath)
-	let solarpath = fm.joinPath(fm.documentsDirectory(), "solar.png")
+	let solarpath = fm.joinPath(fm.documentsDirectory(), "sun.png")
 	solarimage = await fm.readImage(solarpath)
 	let homepath = fm.joinPath(fm.documentsDirectory(), "home.png")
 	homeimage = await fm.readImage(homepath)
