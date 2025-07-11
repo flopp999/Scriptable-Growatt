@@ -4,7 +4,7 @@
 // License: Personal use only. See LICENSE for details.
 // This script was created by Flopp999
 // Support me with a coffee https://www.buymeacoffee.com/flopp999 
-let version = 0.47
+let version = 0.48
 let widget;
 let day;
 let date;
@@ -146,8 +146,6 @@ async function readsettings() {
 			if (!settings.password || settings.password.length === 0) {
 				await askForPassword();
 			}
-
-			
 			if (!settings.deviceSn || settings.deviceSn.length === 0) {
 				settings.deviceSn = "deviceSn"
 			}
@@ -530,7 +528,6 @@ async function ask() {
   settings.height = 550
 	settings.username = await askForUsername();
 	settings.password = await askForPassword();
-	settings.deviceSn = await askForDeviceSn();
 	fm.writeString(filePathSettings, JSON.stringify(settings, null, 2));
 	return settings
 }
@@ -740,19 +737,6 @@ async function Graph(day, graphOption) {
     chart.addImage(GRAPH) 
   }
   listwidget.addSpacer(5);
-}
-
-// Include extra cost?
-async function askForDeviceSn() {
-	let alert = new Alert();
-	alert.title = ("Serial number");
-	alert.message = (t("askfordevicesn") + "?");
-	alert.addTextField().setDefaultKeyboard();
-	alert.addAction("OK");
-	await alert.present();
-	let input = alert.textFieldValue(0);
-	settings.deviceSn = input;
-	return input;
 }
 
 async function renderSection(position) {
