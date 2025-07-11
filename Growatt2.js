@@ -4,9 +4,11 @@
 // License: Personal use only. See LICENSE for details.
 // This script was created by Flopp999
 // Support me with a coffee https://www.buymeacoffee.com/flopp999 
-let version = 0.48
+let version = 0.49
 let widget;
 let day;
+let res;
+let modeText;
 let date;
 let settings = {}
 let hour;
@@ -820,6 +822,9 @@ async function getPlantId(token) {
 
 // === Hämta översiktsdata ===
 async function getOverview(token, plantId) {
+	Path = filePathData
+	DateObj = new Date();
+	async function getData() {
   const req = new Request(overviewUrl)
   req.method = "POST"
   req.headers = {
@@ -828,19 +833,66 @@ async function getOverview(token, plantId) {
     "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8"
   }
   req.body = `plantId=${plantId}`
+			  try{
+			req.timeoutInterval = 10;
   const res = await req.loadJSON()
   if (!res.data) throw new Error("❌ Ingen data från servern")
+								const dataJSON = JSON.stringify(res, null ,2);
+			fm.writeString(filePathData, dataJSON);
+			settings.updatehour = String(DateObj.getHours()).padStart(2,"0");
+			settings.updateminute = String(DateObj.getMinutes()).padStart(2,"0");
+			fm.writeString(filePathSettings, JSON.stringify(settings, null, 2)); // Pretty print
+		} catch (err) {
+			console.error(res)
+			console.error("Fel vid API-anrop:", err);
+		}
+	}
+	
+	if (fm.fileExists(filePathData)) {
+		let modified = fm.modificationDate(filePathData);
+		let now = new Date();
+		let minutesDiff = (now - modified) / (1000 * 60);
+		if ( minutesDiff > 10 ) {
+			await getData();
+		}
+	} else {
+		await getData();
+	}
+	let content = fm.readString(filePathData);
+	data = JSON.parse(content);
+	
 	ppv = parseFloat(res.data.plantCardVo.pvCard?.ppv || 0);
+		if (ppv > 1000) {
+			ppv = ( ppv / 1000).toFixed(1) + "\nkW"
+		} else {
+			ppv = Math.round(ppv) + "\nW"
+		}
 	//epv1 = parseFloat(data.plantCardVo.batteryCard?.todayEnergy || 0):
 	//epv2 = parseFloat(data.plantCardVo.batteryCard?.todayEnergy || 0):
-	solarkwh = parseFloat(res.data.plantCardVo.pvCard?.todayEnergy || 0);
-	batterysoc = parseFloat(res.data.plantDeviceDataVo.batteryData?.[0]?.soc || 0)
-	homekwh = parseFloat(res.data.plantCardVo.payLoadCard?.eselfToday || 0)
-	exportkwh = parseFloat(res.data.plantCardVo.gridCard?.reverseActiveTodayEnergy || 0)
-	importkwh = parseFloat(res.data.plantCardVo.gridCard?.reverseActiveTodayEnergy || 0)
-	batterychargekwh = parseFloat(res.data.plantCardVo.batteryCard?.chargeToday || 0)
-	batterydischargekwh = parseFloat(res.data.plantCardVo.batteryCard?.dischargeToday || 0)
-  return
+	solarkwh = parseFloat(data.data.plantCardVo.pvCard?.todayEnergy || 0);
+	batterysoc = parseFloat(data.data.plantDeviceDataVo.batteryData?.[0]?.soc || 0)
+	homekwh = parseFloat(data.data.plantCardVo.payLoadCard?.eselfToday || 0)
+	exportkwh = parseFloat(data.data.plantCardVo.gridCard?.reverseActiveTodayEnergy || 0)
+	importkwh = parseFloat(data.data.plantCardVo.gridCard?.positiveActiveTodayEnergy || 0)
+	batterychargekwh = parseFloat(data.data.plantCardVo.batteryCard?.chargeToday || 0)
+	batterydischargekwh = parseFloat(data.data.plantCardVo.batteryCard?.dischargeToday || 0)
+    //workMode = res.data.plantDeviceDataVo.invertData[0].workMode
+	let workMode = data.data.plantDeviceDataVo.invertData[0].workMode
+  //settings.updatehour = String(DateObj.getHours()).padStart(2,"0");
+	//settings.updateminute = String(DateObj.getMinutes()).padStart(2,"0");
+				
+
+if (workMode === 0) {
+  modeText = "Load\nFirst"
+} else if (workMode === 1) {
+  modeText = "Battery\nFirst"
+} else if (workMode === 2) {
+  modeText = "Grid\nFirst"
+} else {
+  modeText = "Unknown mode"
+}
+
+	return
 }
 
 async function createWidget(){
@@ -911,6 +963,12 @@ async function createWidget(){
 	let realtimevalueimage=realtimevalue.addStack()
 	realtimevalue.addSpacer(spacesize)
 	let realtimevaluetext=realtimevalue.addStack()
+		realtimevalue.addSpacer(20)
+	let realtimevaluetext4=realtimevalue.addStack()
+	realtimevalue.addSpacer(20)
+	let realtimevaluetext3=realtimevalue.addStack()
+	realtimevalue.addSpacer(155)
+	let realtimePriotext=realtimevalue.addStack()
 	
 	exportrow.layoutVertically()
 	exportrowvalue.layoutVertically()
@@ -923,6 +981,9 @@ async function createWidget(){
 	realtimevalue.layoutHorizontally()
 	realtimevalueimage.layoutVertically()
 	realtimevaluetext.layoutVertically()
+	realtimevaluetext4.layoutVertically()
+	realtimevaluetext3.layoutVertically()
+	realtimePriotext.layoutVertically()
 	
 	let fm = FileManager.iCloud()
 	let exportpath = fm.joinPath(fm.documentsDirectory(), "export.png")
@@ -1020,8 +1081,10 @@ async function createWidget(){
 	let loadpercenttext = percentrowvalue.addText(Math.round(loadpercent) + "\n%");
 	loadpercenttext.font = Font.lightSystemFont(textsize);
 
-	let realtimevaluetext2 = realtimevaluetext.addText(Math.round(ppv) + "\nW");
+		let realtimevaluetext2 = realtimevaluetext.addText(ppv);
 	realtimevaluetext2.font = Font.lightSystemFont(textsize);
+		let realtimePriotext2 = realtimePriotext.addText(modeText);
+	realtimePriotext2.font = Font.lightSystemFont(textsize);
 	
 	solarkwhtext.textColor = new Color("#ffffff");
 	homekwhtext.textColor = new Color("#ffffff");
@@ -1032,7 +1095,8 @@ async function createWidget(){
 	batterysoctext.textColor = new Color("#ffffff");
 	loadpercenttext.textColor = new Color("#ffffff");
 	realtimevaluetext2.textColor = new Color("#ffffff");
-
+realtimePriotext2.textColor = new Color("#ffffff");
+	
   return listwidget;
 }
 
