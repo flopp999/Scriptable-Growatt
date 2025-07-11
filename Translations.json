@@ -180,8 +180,8 @@
     "sv": "medel"
   },
   "askforpassword": {
-    "en": "What is your password for EiB",
-    "sv": "Vad är ditt lösenord till EiB"
+    "en": "What is your password for Growatt",
+    "sv": "Vad är ditt lösenord till Growatt"
   },
   "password": {
     "en": "Password",
@@ -192,7 +192,7 @@
     "sv": "Användarnamn"
   },
   "askforusername": {
-    "en": "What is your username for EiB",
-    "sv": "Vad är ditt användarnamn till EiB"
+    "en": "What is your username for Growatt",
+    "sv": "Vad är ditt användarnamn till Growatt"
   }
 }
