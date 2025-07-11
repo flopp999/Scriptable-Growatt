@@ -42,7 +42,7 @@ const filePathSettings = fm.joinPath(dir, fileNameSettings);
 const filePathTranslations = fm.joinPath(dir, fileNameTranslations);
 
 if (!config.runsInWidget){
-	//await downLoadFiles();
+	await downLoadFiles();
 	await updatecode();
 	await readTranslations();
 	await readsettings();
