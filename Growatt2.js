@@ -4,7 +4,7 @@
 // License: Personal use only. See LICENSE for details.
 // This script was created by Flopp999
 // Support me with a coffee https://www.buymeacoffee.com/flopp999 
-let version = 0.50
+let version = 0.51
 let widget;
 let day;
 let res;
@@ -46,17 +46,14 @@ if (!config.runsInWidget){
 	await updatecode();
 	await readTranslations();
 	await readsettings();
-	//await createVariables();
-	//await start();
 }
 
 if (config.runsInWidget){
 	await readsettings();
 	await updatecode();
-	//await createVariables();
 }
 
-async function downLoadFiles() {
+async function downLoadFiles(force = false) {
 	const baseUrl = "https://raw.githubusercontent.com/flopp999/Scriptable-Growatt/main/assets/"
 	const filesToDownload = [
 		"charge.png",
@@ -76,7 +73,7 @@ async function downLoadFiles() {
 	]
 	for (let filename of filesToDownload) {
 		const filePath = fm.joinPath(dir, filename)
-		if (!fm.fileExists(filePath)) {
+		if (!fm.fileExists(filePath) || force ) {
 			const url = baseUrl + filename
 			try {
 				const req = new Request(url)
@@ -117,6 +114,7 @@ async function updatecode() {
 				const codeStringTranslations = responseTranslations.toRawString();
 				fm.writeString(filePathTranslations, codeStringTranslations);
 				//fm.remove(filePathSettings);
+				await downLoadFiles(true);
 				let updateNotify = new Notification();
 				updateNotify.title = Script.name();
 				updateNotify.body = "New version installed, " + serverVersion;
@@ -139,9 +137,9 @@ async function readsettings() {
 			if (!settings.area) {
 				await askForArea();
 			}
-			if (!settings.deviceType || settings.deviceType.length === 0) {
-				settings.deviceType = ""
-			}
+			//if (!settings.deviceType || settings.deviceType.length === 0) {
+				//settings.deviceType = ""
+			//}
 			if (!settings.username || settings.username.length === 0) {
 				await askForUsername();
 			}
@@ -202,15 +200,8 @@ function hexToBytes(hex) {
 }
 
 function skapaPwd(password) {
-  
 	md5Hex = md5(password);
-  //log(md5Hex)
-  //log("/::")
-	//const utf8Bytes = Data.fromString(md5Hex)
-  //log(utf8Bytes)
-	//const base64 = Data.fromBytes(md5Bytes).toBase64String();
-  //return utf8Bytes.toBase64String()
-return md5Hex
+	return md5Hex
 }
 
 // =============== MD5-algoritm ===============
@@ -359,140 +350,15 @@ function md5(str) {
   return hex(md51(str));
 }
 
-
 async function loginAndGetToken() {
   const req = new Request(loginUrl)
   req.method = "POST"
   req.headers = { "Content-Type": "application/json;charset=UTF-8" }
   req.body = JSON.stringify({ username: settings.username, password: skapaPwd(settings.password) })
   const res = await req.loadJSON()
- //log(res.code)
    //if (res.code !== 0 || !res.data.token) throw new Error("❌ Inloggning misslyckades")
   return res.data.token
 }
-
-
-async function getDeviceType() {
-	Path = filePathData
-	DateObj = new Date();
-	const url = "https://openapi.growatt.com/v4/new-api/queryDeviceList";
-	let req = new Request(url);
-	req.method = "POST";
-	req.headers = {
-		"Content-Type": "application/x-www-form-urlencoded",
-		"token": settings.token
-	};
-	try {
-		req.timeoutInterval = 10;
-		response = await req.loadJSON();
-		if (req.response.statusCode === 200) {
-			//const dataJSON = JSON.stringify(response, null ,2);
-			settings.deviceType = response["data"]["data"][0]["deviceType"]
-			//fm.writeString(filePathData, dataJSON);
-		fm.writeString(filePathSettings, JSON.stringify(settings, null, 2)); // Pretty print
-		} else {
-			console.error("Fel statuskod:", req.response.statusCode);
-		}
-	} catch (err) {
-		console.error(response)
-		console.error("Fel vid API-anrop:", err);
-	}
-}
-
-async function fetchData() {
-	Path = filePathData
-	DateObj = new Date();
-	async function getData() {
-		const url = "https://openapi.growatt.com/v4/new-api/queryLastData";
-		let req = new Request(url);
-		req.method = "POST";
-		req.headers = {
-			"Content-Type": "application/x-www-form-urlencoded",
-			"token": settings.token
-		};
-		req.body = `deviceSn=${encodeURIComponent(settings.deviceSn)}&deviceType=${encodeURIComponent(settings.deviceType)}`;
-		try {
-			req.timeoutInterval = 10;
-			const response = await req.loadJSON();
-			if (req.response.statusCode === 200) {
-				if (response["message"] = "FREQUENTLY_ACCESS") {
-					return
-				}
-				const dataJSON = JSON.stringify(response, null ,2);
-				fm.writeString(filePathData, dataJSON);
-				settings.updatehour = String(DateObj.getHours()).padStart(2,"0");
-				settings.updateminute = String(DateObj.getMinutes()).padStart(2,"0");
-				fm.writeString(filePathSettings, JSON.stringify(settings, null, 2)); // Pretty print
-			} else {
-				console.error("Fel statuskod:", req.response.statusCode);
-			}
-		} catch (err) {
-			console.error(response)
-			console.error("Fel vid API-anrop:", err);
-		}
-	}
-	
-	if (fm.fileExists(filePathData)) {
-		let modified = fm.modificationDate(filePathData);
-		let now = new Date();
-		let minutesDiff = (now - modified) / (1000 * 60);
-		if ( minutesDiff > 10 ) {
-			await getData();
-		}
-	} else {
-		await getData();
-	}
-	let content = fm.readString(filePathData);
-	data = JSON.parse(content);
-	
-	if (settings.deviceType == "min") {
-		ppv = data["data"][settings.deviceType][0]["ppv"];
-		epv1 = data["data"][settings.deviceType][0]["epv1Today"];
-		epv2 = data["data"][settings.deviceType][0]["epv2Today"];
-		solarkwh = epv1+epv2
-		batterysoc = data["data"][settings.deviceType][0]["bmsSoc"];
-		homekwh = data["data"][settings.deviceType][0]["elocalLoadToday"];
-		exportkwh = data["data"][settings.deviceType][0]["etoGridToday"];
-		importkwh = data["data"][settings.deviceType][0]["etoUserToday"];
-		batterychargekwh = data["data"][settings.deviceType][0]["echargeToday"];
-		batterydischargekwh = data["data"][settings.deviceType][0]["edischargeToday"];
-	} else if (settings.deviceType == "storage") {
-		solarkwh = data["data"][settings.deviceType][0]["epvToday"];
-		batterysoc = data["data"][settings.deviceType][0]["capacity"];
-		homekwh = data["data"][settings.deviceType][0]["eopDischrToday"];
-		exportkwh = data["data"][settings.deviceType][0]["eToGridToday"];
-		importkwh = data["data"][settings.deviceType][0]["eToUserToday"];
-		batterychargekwh = data["data"][settings.deviceType][0]["etoday"];
-		batterydischargekwh = data["data"][settings.deviceType][0]["eBatDisChargeToday"];
-	} else if (settings.deviceType == "inv") {
-		epv1 = data["data"][settings.deviceType][0]["epv1Today"];
-		epv2 = data["data"][settings.deviceType][0]["epv2Today"];
-		solarkwh = epv1+epv2
-	} else if (settings.deviceType == "max") {
-		solarkwh = data["data"][settings.deviceType][0]["eacToday"];
-	} else if (settings.deviceType == "sph") {
-		epv1 = data["data"][settings.deviceType][0]["epv1Today"];
-		epv2 = data["data"][settings.deviceType][0]["epv2Today"];
-		solarkwh = epv1+epv2
-		batterysoc = data["data"][settings.deviceType][0]["soc"];
-		homekwh = data["data"][settings.deviceType][0]["elocalLoadToday"];
-		exportkwh = data["data"][settings.deviceType][0]["etoGridToday"];
-		importkwh = data["data"][settings.deviceType][0]["etoUserToday"];
-		batterychargekwh = data["data"][settings.deviceType][0]["echarge1Today"];
-		batterydischargekwh = data["data"][settings.deviceType][0]["edischarge1Today"];
-	} else if (settings.deviceType == "sph-s") {
-		epv1 = data["data"][settings.deviceType][0]["epv1Today"];
-		epv2 = data["data"][settings.deviceType][0]["epv2Today"];
-		solarkwh = epv1+epv2
-		batterysoc = data["data"][settings.deviceType][0]["soc"];
-		homekwh = data["data"][settings.deviceType][0]["elocalLoadToday"];
-		exportkwh = data["data"][settings.deviceType][0]["etoGridToday"];
-		importkwh = data["data"][settings.deviceType][0]["etoUserToday"];
-		batterychargekwh = data["data"][settings.deviceType][0]["echarge1Today"];
-		batterydischargekwh = data["data"][settings.deviceType][0]["edischarge1Today"];
-	}
-}
-
 async function readTranslations() {
 	if (!fm.fileExists(filePathTranslations)) {
 		let url = "https://raw.githubusercontent.com/flopp999/Scriptable-Growatt/main/Translations.json";
@@ -535,7 +401,7 @@ async function ask() {
 }
 
 async function PriceStats(day) {
-  await Data(day);
+  await nordpoolData(day);
   if (prices == 0) {
     return;
     }
@@ -555,7 +421,7 @@ async function PriceStats(day) {
   avg.font = Font.lightSystemFont(11);
   avg.textColor = new Color("#f38");
   bottom.addSpacer();
-  // t
+
   let highest = bottom.addText(t("highest") + " " + Math.round(priceHighest));
   highest.font = Font.lightSystemFont(11);
   highest.textColor = new Color("#ff19ff");
@@ -603,7 +469,6 @@ async function askForArea() {
   return [settings.area, settings.vat, currencies];
 }
 
-// Select resolution
 async function askForLanguage() {
 	let alert = new Alert();
 	alert.message = "Language/Språk:";
@@ -615,7 +480,6 @@ async function askForLanguage() {
 	return [1,3][index];
 }
 
-// Include extra cost?
 async function askForUsername() {
 	let alert = new Alert();
 	alert.title = "Username";
@@ -643,7 +507,7 @@ async function askForPassword() {
 
 async function Graph(day, graphOption) {
 //chart
-  await Data(day);
+  await nordpoolData(day);
   let left = listwidget.addStack();
   let whatday = left.addText(date);
   whatday.textColor = new Color("#ffffff");
@@ -760,7 +624,7 @@ async function renderSection(position) {
 	}
 }
 
-async function Data(day) {
+async function nordpoolData(day) {
   allValues = [];
   Path = fm.joinPath(dir, "NordPool_" + day + "Prices.json");
   DateObj = new Date();
@@ -805,7 +669,6 @@ async function Data(day) {
   priceAvg = pricesJSON.map(Number).reduce((a, b) => a + b, 0) / pricesJSON.length;
 }
 
-// === Hämta plantId ===
 async function getPlantId(token) {
   const req = new Request(plantListUrl)
   req.method = "POST"
@@ -820,7 +683,6 @@ async function getPlantId(token) {
   return plantId
 }
 
-// === Hämta översiktsdata ===
 async function getOverview(token, plantId) {
 	Path = filePathData
 	DateObj = new Date();
@@ -833,19 +695,19 @@ async function getOverview(token, plantId) {
     "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8"
   }
   req.body = `plantId=${plantId}`
-			  try{
-			req.timeoutInterval = 10;
-  const res = await req.loadJSON()
-  if (!res.data) throw new Error("❌ Ingen data från servern")
-								const dataJSON = JSON.stringify(res, null ,2);
-			fm.writeString(filePathData, dataJSON);
-			settings.updatehour = String(DateObj.getHours()).padStart(2,"0");
-			settings.updateminute = String(DateObj.getMinutes()).padStart(2,"0");
-			fm.writeString(filePathSettings, JSON.stringify(settings, null, 2)); // Pretty print
-		} catch (err) {
-			console.error(res)
-			console.error("Fel vid API-anrop:", err);
-		}
+  try{
+		req.timeoutInterval = 10;
+	  const res = await req.loadJSON()
+	  if (!res.data) throw new Error("❌ Ingen data från servern")
+		const dataJSON = JSON.stringify(res, null ,2);
+		fm.writeString(filePathData, dataJSON);
+		settings.updatehour = String(DateObj.getHours()).padStart(2,"0");
+		settings.updateminute = String(DateObj.getMinutes()).padStart(2,"0");
+		fm.writeString(filePathSettings, JSON.stringify(settings, null, 2));
+	} catch (err) {
+		console.error(res)
+		console.error("Fel vid API-anrop:", err);
+	}
 	}
 	
 	if (fm.fileExists(filePathData)) {
@@ -862,11 +724,11 @@ async function getOverview(token, plantId) {
 	data = JSON.parse(content);
 	
 	ppv = parseFloat(data.data.plantCardVo.pvCard?.ppv || 0);
-		if (ppv > 1000) {
-			ppv = ( ppv / 1000).toFixed(1) + "\nkW"
-		} else {
-			ppv = Math.round(ppv) + "\nW"
-		}
+	if (ppv > 1000) {
+		ppv = ( ppv / 1000).toFixed(1) + "\nkW"
+	} else {
+		ppv = Math.round(ppv) + "\nW"
+	}
 	//epv1 = parseFloat(data.plantCardVo.batteryCard?.todayEnergy || 0):
 	//epv2 = parseFloat(data.plantCardVo.batteryCard?.todayEnergy || 0):
 	solarkwh = parseFloat(data.data.plantCardVo.pvCard?.todayEnergy || 0);
@@ -876,37 +738,27 @@ async function getOverview(token, plantId) {
 	importkwh = parseFloat(data.data.plantCardVo.gridCard?.positiveActiveTodayEnergy || 0)
 	batterychargekwh = parseFloat(data.data.plantCardVo.batteryCard?.chargeToday || 0)
 	batterydischargekwh = parseFloat(data.data.plantCardVo.batteryCard?.dischargeToday || 0)
-    //workMode = res.data.plantDeviceDataVo.invertData[0].workMode
 	let workMode = data.data.plantDeviceDataVo.invertData[0].workMode
-  //settings.updatehour = String(DateObj.getHours()).padStart(2,"0");
-	//settings.updateminute = String(DateObj.getMinutes()).padStart(2,"0");
-				
 
-if (workMode === 0) {
-  modeText = "Load\nFirst"
-} else if (workMode === 1) {
-  modeText = "Battery\nFirst"
-} else if (workMode === 2) {
-  modeText = "Grid\nFirst"
-} else {
-  modeText = "Unknown mode"
-}
-
+	if (workMode === 0) {
+  	modeText = "Load\nFirst"
+	} else if (workMode === 1) {
+	  modeText = "Battery\nFirst"
+	} else if (workMode === 2) {
+	  modeText = "Grid\nFirst"
+	} else {
+	  modeText = "Unknown mode"
+	}
 	return
 }
 
 async function createWidget(){
-	//token = set loginAndGetToken();
+	
 	listwidget.backgroundColor = new Color("#000000");
-	//if (!settings.deviceType || settings.deviceType.length === 0 || settings.deviceType == "") {
-		//await getDeviceType();
-	//}
+
 	const token = await loginAndGetToken()
   const plantId = await getPlantId(token)
   const data = await getOverview(token, plantId)
-  //const widget = await createWidget(data)
-//		await loginAndGetToken();
-	//await fetchData(settings.deviceType);
 	await renderSection("top");
   await renderSection("middle");
 	let moms = listwidget.addStack();
@@ -963,7 +815,7 @@ async function createWidget(){
 	let realtimevalueimage=realtimevalue.addStack()
 	realtimevalue.addSpacer(spacesize)
 	let realtimevaluetext=realtimevalue.addStack()
-		realtimevalue.addSpacer(20)
+	realtimevalue.addSpacer(20)
 	let realtimevaluetext4=realtimevalue.addStack()
 	realtimevalue.addSpacer(20)
 	let realtimevaluetext3=realtimevalue.addStack()
@@ -1023,7 +875,6 @@ async function createWidget(){
 	}
 	batterysocimage = await fm.readImage(batterysocpath)
 	
-	
 	exportrow.addSpacer(2);
 	ii=exportrow.addImage(exportimage);
 	ii.imageSize = new Size(imagesize, imagesize);
@@ -1081,9 +932,9 @@ async function createWidget(){
 	let loadpercenttext = percentrowvalue.addText(Math.round(loadpercent) + "\n%");
 	loadpercenttext.font = Font.lightSystemFont(textsize);
 
-		let realtimevaluetext2 = realtimevaluetext.addText(ppv);
+	let realtimevaluetext2 = realtimevaluetext.addText(ppv);
 	realtimevaluetext2.font = Font.lightSystemFont(textsize);
-		let realtimePriotext2 = realtimePriotext.addText(modeText);
+	let realtimePriotext2 = realtimePriotext.addText(modeText);
 	realtimePriotext2.font = Font.lightSystemFont(textsize);
 	
 	solarkwhtext.textColor = new Color("#ffffff");
@@ -1095,8 +946,7 @@ async function createWidget(){
 	batterysoctext.textColor = new Color("#ffffff");
 	loadpercenttext.textColor = new Color("#ffffff");
 	realtimevaluetext2.textColor = new Color("#ffffff");
-realtimePriotext2.textColor = new Color("#ffffff");
-	
+	realtimePriotext2.textColor = new Color("#ffffff");
   return listwidget;
 }
 
@@ -1106,9 +956,7 @@ const bigFont = 13.5;
 const hours = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23];
 
 const now = new Date();
-// Hämta antalet dagar i innevarande månad
 const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
-// Skapa array från 1 till antal dagar
 const daysArray = Array.from({ length: daysInMonth }, (_, i) => i + 1);
 
 let listwidget = new ListWidget();
