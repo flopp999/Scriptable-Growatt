@@ -1,7 +1,7 @@
 # ⚡️ Growatt Widget
 
 A simple Scriptable widget that displays data from **Growatt** directly on your iPhone or iPad.  
-Data is fetched directly from https://openapi.growatt.com/  
+Data is fetched directly from https://shineserver.growatt.com/  
 New versions of the script will be updated automatically.  
 
 ---
