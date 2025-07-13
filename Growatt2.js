@@ -513,8 +513,7 @@ async function Graph(day, graphOption) {
   let left = listwidget.addStack();
   let whatday
 	if (date == todaydate) {
-		log("idag")
-		whatday = left.addText(t("idag"));
+		whatday = left.addText(t("today"));
 	} else {
 		whatday = left.addText(date);
 	}
