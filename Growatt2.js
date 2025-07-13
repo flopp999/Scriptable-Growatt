@@ -4,9 +4,10 @@
 // License: Personal use only. See LICENSE for details.
 // This script was created by Flopp999
 // Support me with a coffee https://www.buymeacoffee.com/flopp999 
-let version = 0.51
+let version = 0.52
 let widget;
 let day;
+let todaydate;
 let res;
 let modeText;
 let date;
@@ -510,6 +511,9 @@ async function Graph(day, graphOption) {
   await nordpoolData(day);
   let left = listwidget.addStack();
   let whatday = left.addText(date);
+	if (date == todaydate) {
+		log("idag)
+	}
   whatday.textColor = new Color("#ffffff");
   whatday.font = Font.lightSystemFont(13);
   left.addSpacer();
@@ -632,8 +636,8 @@ async function nordpoolData(day) {
     const yyyy = DateObj.getFullYear();
     const mm = String(DateObj.getMonth() + 1).padStart(2, '0');
     const dd = String(DateObj.getDate()).padStart(2, '0');
-    const date = `${yyyy}-${mm}-${dd}`;
-    const Url = `https://dataportal-api.nordpoolgroup.com/api/DayAheadPriceIndices?date=${date}&market=DayAhead&indexNames=${settings.area}&currency=${settings.currency}&resolutionInMinutes=${settings.resolution}`;
+    todaydate = `${yyyy}-${mm}-${dd}`;
+    const Url = `https://dataportal-api.nordpoolgroup.com/api/DayAheadPriceIndices?date=${todaydate}&market=DayAhead&indexNames=${settings.area}&currency=${settings.currency}&resolutionInMinutes=${settings.resolution}`;
     const request = new Request(Url);
     request.timeoutInterval = 1;
     let response = (await request.loadJSON());
