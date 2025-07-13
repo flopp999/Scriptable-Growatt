@@ -916,22 +916,22 @@ async function createWidget(){
 	ked.imageSize = new Size(imagesize, imagesize);
 
 	// Value
-	let exportkwhtext = exportrowvalue.addText(Math.round(exportkwh) + "\nkWh");
+	let exportkwhtext = exportrowvalue.addText((exportkwh) + "\nkWh");
 	exportkwhtext.font = Font.lightSystemFont(textsize);
 	exportrowvalue.addSpacer(3);
-	let importkwhtext = exportrowvalue.addText(Math.round(importkwh)+"\nkWh");
+	let importkwhtext = exportrowvalue.addText((importkwh)+"\nkWh");
 	importkwhtext.font = Font.lightSystemFont(textsize);
 	
-	let solarkwhtext = sunhomerowvalue.addText(Math.round(solarkwh) + "\nkWh");
+	let solarkwhtext = sunhomerowvalue.addText((solarkwh) + "\nkWh");
 	solarkwhtext.font = Font.lightSystemFont(textsize);
 	sunhomerowvalue.addSpacer(4);
-	let homekwhtext = sunhomerowvalue.addText(Math.round(homekwh) + "\nkWh");
+	let homekwhtext = sunhomerowvalue.addText((homekwh) + "\nkWh");
 	homekwhtext.font = Font.lightSystemFont(textsize);
 	
-	let batterychargekwhtext = batteryrowvalue.addText(Math.round(batterychargekwh) + "\nkWh");
+	let batterychargekwhtext = batteryrowvalue.addText((batterychargekwh) + "\nkWh");
 	batterychargekwhtext.font = Font.lightSystemFont(textsize);
 	batteryrowvalue.addSpacer(3);
-	let batterydischargekwhtext = batteryrowvalue.addText(Math.round(batterydischargekwh) + "\nkWh");
+	let batterydischargekwhtext = batteryrowvalue.addText((batterydischargekwh) + "\nkWh");
 	batterydischargekwhtext.font = Font.lightSystemFont(textsize);
 	
 	let batterysoctext = percentrowvalue.addText(Math.round(batterysoc) + "\n%");
