@@ -4,7 +4,7 @@
 // License: Personal use only. See LICENSE for details.
 // This script was created by Flopp999
 // Support me with a coffee https://www.buymeacoffee.com/flopp999 
-let version = 0.53
+let version = 0.54
 let widget;
 let day;
 let today;
@@ -513,8 +513,8 @@ async function Graph(day, graphOption) {
   let left = listwidget.addStack();
   let whatday
 	if (date == todaydate) {
-		log("idag)
-		whatday = left.addText("Idag");
+		log("idag")
+		whatday = left.addText(t("idag"));
 	} else {
 		whatday = left.addText(date);
 	}
