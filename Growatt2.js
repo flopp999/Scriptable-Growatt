@@ -4,9 +4,10 @@
 // License: Personal use only. See LICENSE for details.
 // This script was created by Flopp999
 // Support me with a coffee https://www.buymeacoffee.com/flopp999 
-let version = 0.52
+let version = 0.53
 let widget;
 let day;
+let today;
 let todaydate;
 let res;
 let modeText;
@@ -510,9 +511,12 @@ async function Graph(day, graphOption) {
 //chart
   await nordpoolData(day);
   let left = listwidget.addStack();
-  let whatday = left.addText(date);
+  let whatday
 	if (date == todaydate) {
 		log("idag)
+		whatday = left.addText("Idag");
+	} else {
+		whatday = left.addText(date);
 	}
   whatday.textColor = new Color("#ffffff");
   whatday.font = Font.lightSystemFont(13);
@@ -960,6 +964,10 @@ const bigFont = 13.5;
 const hours = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23];
 
 const now = new Date();
+const yyyy = now.getFullYear();
+const mm = String(now.getMonth() + 1).padStart(2, '0');
+const dd = String(now.getDate()).padStart(2, '0');
+todaydate = `${yyyy}-${mm}-${dd}`;
 const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
 const daysArray = Array.from({ length: daysInMonth }, (_, i) => i + 1);
 
