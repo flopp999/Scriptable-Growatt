@@ -4,7 +4,7 @@
 // License: Personal use only. See LICENSE for details.
 // This script was created by Flopp999
 // Support me with a coffee https://www.buymeacoffee.com/flopp999 
-let version = 0.55
+let version = 0.56
 let widget;
 let day;
 let today;
@@ -382,16 +382,25 @@ function t(key) {
 }
 
 async function ask() {
-	[settings.area, settings.vat, settings.currency] = await askForArea();
-  settings.includevat = await askForIncludeVAT();
-  settings.extras = await askForExtras();
-  settings.showattop = "graph, today"
-  settings.showatmiddle = "pricestats, today"
-  settings.graphOption = {"top": "line"},
-  settings.resolution = 60;
-  settings.height = 550
 	settings.username = await askForUsername();
 	settings.password = await askForPassword();
+	settings.showprice = await askForShowPrice();
+	if (settings.showprice == 1) {
+		[settings.area, settings.vat, settings.currency] = await askForArea();
+	  settings.includevat = await askForIncludeVAT();
+	  settings.extras = await askForExtras();
+	  settings.showattop = "graph, today"
+	  settings.showatmiddle = "pricestats, today"
+	  settings.graphOption = {"top": "line"},
+	  settings.resolution = 60;
+	  settings.height = 550
+	}
+	settings.area = "--";
+	settings.vat = 0,
+	settings.currency = "--";
+	settings.includevat = 0;
+	settings.extras = 0;
+	
 	fm.writeString(filePathSettings, JSON.stringify(settings, null, 2));
 	return settings
 }
