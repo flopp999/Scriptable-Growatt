@@ -4,7 +4,7 @@
 // License: Personal use only. See LICENSE for details.
 // This script was created by Flopp999
 // Support me with a coffee https://www.buymeacoffee.com/flopp999 
-let version = 0.54
+let version = 0.55
 let widget;
 let day;
 let today;
@@ -139,9 +139,9 @@ async function readsettings() {
 			if (!settings.area) {
 				await askForArea();
 			}
-			//if (!settings.deviceType || settings.deviceType.length === 0) {
-				//settings.deviceType = ""
-			//}
+			if (settings.showprice !== 0 && settings.showprice !== 1) {
+				await askForShowPrice();
+			}
 			if (!settings.username || settings.username.length === 0) {
 				await askForUsername();
 			}
@@ -428,6 +428,17 @@ async function PriceStats(day) {
   highest.font = Font.lightSystemFont(11);
   highest.textColor = new Color("#ff19ff");
   listwidget.addSpacer(5);
+}
+
+async function askForShowPrice() {
+  let alert = new Alert();
+  alert.message = t("doyouwantprices") + "?";
+  alert.addAction(t("yes"));
+  alert.addAction(t("no"));
+  let index = await alert.presentAlert();
+  settings.showprice = [1,0][index];
+  fm.writeString(filePathSettings, JSON.stringify(settings, null, 2));
+  return [1,0][index];
 }
 
 async function askForExtras() {
@@ -766,8 +777,11 @@ async function createWidget(){
 	const token = await loginAndGetToken()
   const plantId = await getPlantId(token)
   const data = await getOverview(token, plantId)
-	await renderSection("top");
+	if (settings.showprice == 1){
+		await renderSection("top");
   await renderSection("middle");
+	
+	}
 	let moms = listwidget.addStack();
   momstext = moms.addText("v. " + version);
   momstext.font = Font.lightSystemFont(10);
