@@ -19,9 +19,9 @@
     "en": "Choose your electricity area",
     "sv": "Välj ditt elområde"
   },
-  "askfortoken": {
-    "en": "Enter the token created on the Growatt website",
-    "sv": "Ange token som skapats på Growatts webbplats"
+  "doyouwantprices": {
+    "en": "Do you want to see electricity prices from Nord Pool",
+    "sv": "Vill du visa elpriser från Nord Pool"
   },
   "askfordevicesn": {
     "en": "Enter the serial number of your inverter",
