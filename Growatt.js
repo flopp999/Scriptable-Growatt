@@ -136,6 +136,9 @@ async function readsettings() {
 		if (fm.fileExists(filePathSettings)) {
 			let raw = fm.readString(filePathSettings);
 			settings = JSON.parse(raw);
+			if (!settings.language || settings.language.length === 0) {
+				settings.language = 1
+			}			
 			if (!settings.area) {
 				await askForArea();
 			}
@@ -148,17 +151,11 @@ async function readsettings() {
 			if (!settings.password || settings.password.length === 0) {
 				await askForPassword();
 			}
-			if (!settings.deviceSn || settings.deviceSn.length === 0) {
-				settings.deviceSn = "deviceSn"
-			}
 			if (!settings.updatehour || settings.updatehour.length === 0) {
 				settings.updatehour = "0"
 			}
 			if (!settings.updateminute || settings.updateminute.length === 0) {
 				settings.updateminute = "01"
-			}
-			if (!settings.language || settings.language.length === 0) {
-				settings.language = 1
 			}
 			fm.writeString(filePathSettings, JSON.stringify(settings, null, 2));
 			await readTranslations();
@@ -189,7 +186,7 @@ async function readsettings() {
 		}
 		console.warn("Settings file not found or error reading file: " + error.message);
 		settings = await ask();
-		fm.writeString(filePathSettings, JSON.stringify(settings, null, 2)); // Pretty print
+		fm.writeString(filePathSettings, JSON.stringify(settings, null, 2));
 	}
 }
 
@@ -206,8 +203,6 @@ function skapaPwd(password) {
 	return md5Hex
 }
 
-// =============== MD5-algoritm ===============
-// Kod från https://github.com/blueimp/JavaScript-MD5 – 100 % kompatibel med Python
 function md5cycle(x, k) {
   let a = x[0],
       b = x[1],
@@ -358,7 +353,6 @@ async function loginAndGetToken() {
   req.headers = { "Content-Type": "application/json;charset=UTF-8" }
   req.body = JSON.stringify({ username: settings.username, password: skapaPwd(settings.password) })
   const res = await req.loadJSON()
-   //if (res.code !== 0 || !res.data.token) throw new Error("❌ Inloggning misslyckades")
   return res.data.token
 }
 async function readTranslations() {
@@ -747,8 +741,6 @@ async function getOverview(token, plantId) {
 	} else {
 		ppv = Math.round(ppv) + "\nW"
 	}
-	//epv1 = parseFloat(data.plantCardVo.batteryCard?.todayEnergy || 0):
-	//epv2 = parseFloat(data.plantCardVo.batteryCard?.todayEnergy || 0):
 	solarkwh = parseFloat(data.data.plantCardVo.pvCard?.todayEnergy || 0);
 	batterysoc = parseFloat(data.data.plantDeviceDataVo.batteryData?.[0]?.soc || 0)
 	homekwh = parseFloat(data.data.plantCardVo.payLoadCard?.eselfToday || 0)
@@ -777,10 +769,9 @@ async function createWidget(){
 	const token = await loginAndGetToken()
   const plantId = await getPlantId(token)
   const data = await getOverview(token, plantId)
-	if (settings.showprice == 1){
+	if (settings.showprice == 1) {
 		await renderSection("top");
-  await renderSection("middle");
-	
+  	await renderSection("middle");
 	}
 	let moms = listwidget.addStack();
   momstext = moms.addText("v. " + version);
@@ -928,7 +919,6 @@ async function createWidget(){
 	ked=realtimevalueimage.addImage(sunimage);
 	ked.imageSize = new Size(imagesize, imagesize);
 
-	// Value
 	let exportkwhtext = exportrowvalue.addText((exportkwh) + "\nkWh");
 	exportkwhtext.font = Font.lightSystemFont(textsize);
 	exportrowvalue.addSpacer(3);
