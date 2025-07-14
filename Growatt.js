@@ -394,13 +394,13 @@ async function ask() {
 	  settings.graphOption = {"top": "line"},
 	  settings.resolution = 60;
 	  settings.height = 550
+	} else {
+		settings.area = "--";
+		settings.vat = 0,
+		settings.currency = "--";
+		settings.includevat = 0;
+		settings.extras = 0;
 	}
-	settings.area = "--";
-	settings.vat = 0,
-	settings.currency = "--";
-	settings.includevat = 0;
-	settings.extras = 0;
-	
 	fm.writeString(filePathSettings, JSON.stringify(settings, null, 2));
 	return settings
 }
